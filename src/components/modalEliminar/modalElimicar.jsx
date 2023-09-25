@@ -3,6 +3,7 @@ import { doc, deleteDoc } from "firebase/firestore";
 import appFirebase from "../../firebase/firebase.config";
 import { getFirestore } from "firebase/firestore";
 import { Modal, ModalHeader, ModalFooter, Button } from "reactstrap";
+import "../modal/modal.css";
 
 function ModalEliminar({ isOpen, closeModal, userIdToDelete, onDeleteUsuario }) {
   const db = getFirestore(appFirebase);
@@ -18,6 +19,7 @@ function ModalEliminar({ isOpen, closeModal, userIdToDelete, onDeleteUsuario }) 
       console.log("Usuario eliminado correctamente");
       onDeleteUsuario();
       closeModal();
+      window.alert("Se elimino el Administrador");
     } catch (error) {
       console.error("Error al eliminar usuario: ", error);
     }

@@ -13,38 +13,62 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
-library.add(faPenToSquare, faSquareXmark);
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
 
 function Administradores() {
+  const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
-    obtenerUsuarios();
-  }, []); // Empty dependency array to ensure it only runs once on component mount
+    obtenerUsuarios(1); // Fetch the first page of users
+  }, []);
   const [IdUser, setCedula] = useState(0);
   const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const [isOpenActualizar, openModalActualizar, closeModalActualizar] =
     useModal(false);
-  const [isOpenCrear, openModalCrear, closeModalCrear] =
-  useModal(false);
+  const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
   const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
-  useModal(false);
+    useModal(false);
   const [dataState, setData] = useState([]);
   const abrirModalActualizar = (cedula) => {
+    console.log(cedula);
     setCedula(cedula);
-    openModalActualizar(); 
+    console.log(cedula);
+    openModalActualizar();
   };
   const abrirModalEliminar = (cedula) => {
     setCedula(cedula);
-    openModalEliminar(); 
+    console.log(cedula);
+    openModalEliminar();
   };
-  const obtenerUsuarios = async () => {
+  const handleNextPage = () => {
+    // Increment the page and fetch the next page of users
+    obtenerUsuarios(currentPage + 1);
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      // Decrement the page and fetch the previous page of users
+      obtenerUsuarios(currentPage - 1);
+      setCurrentPage((prevPage) => prevPage - 1);
+    }
+  };
+  const obtenerUsuarios = async (page) => {
     try {
+      const usersPerPage = 10; // Number of users to fetch per page
+      const startIndex = (page - 1) * usersPerPage;
+
       const userRef = collection(db, "Usuarios");
       const userSnapshot = await getDocs(userRef);
-      const listaUsuarios = userSnapshot.docs
-      .map((user) => user.data())
-      .filter((user) => user.rol === "Admin");
-      console.log(listaUsuarios);
-      setData(listaUsuarios); // Update the data state with the fetched users
+      const allUsers = userSnapshot.docs
+        .map((user) => user.data())
+        .filter((user) => user.rol === "Admin" || user.rol === "Super Admin");
+
+      // Calculate the slice of users for the current page
+      const slicedUsers = allUsers.slice(startIndex, startIndex + usersPerPage);
+
+      setData(slicedUsers); // Update the data state with the fetched users
     } catch (error) {
       console.error("Error al obtener usuarios: ", error);
     }
@@ -57,7 +81,9 @@ function Administradores() {
   return (
     <Container>
       <br />
-      <Button onClick={openModalCrear} color="success">Crear</Button>
+      <Button onClick={openModalCrear} color="success">
+        Crear
+      </Button>
       <br />
       <br />
       <Table>
@@ -73,25 +99,49 @@ function Administradores() {
         </thead>
 
         <tbody>
-        {dataState.map((dato) => (
-  <tr key={dato.idUser}>
-    <td>{dato.cedula}</td>
-    <td>{dato.nombre}</td>
-    <td>{dato.telefono}</td>
-    <td>{dato.correoElectronico}</td>
-    <td>{dato.rol}</td>
-    <td>
-      <Button onClick={() => abrirModalActualizar(dato.idUser)} color="primary">
-        <FontAwesomeIcon icon={faPenToSquare} size="lg" />
-      </Button>
-      <Button onClick={() => abrirModalEliminar(dato.idUser)} color="danger">
-        <FontAwesomeIcon  icon={faSquareXmark} size="lg" />
-      </Button>
-    </td>
-  </tr>
+          {dataState.map((dato) => (
+            <tr key={dato.idUser}>
+              <td>{dato.cedula}</td>
+              <td>{dato.nombre}</td>
+              <td>{dato.telefono}</td>
+              <td>{dato.correoElectronico}</td>
+              <td>{dato.rol}</td>
+              <td>
+                <Button
+                  onClick={() => abrirModalActualizar(dato.idUser)}
+                  color="primary"
+                >
+                  <FontAwesomeIcon icon={faPenToSquare} size="lg" />
+                </Button>
+                <Button
+                  onClick={() => abrirModalEliminar(dato.idUser)}
+                  color="danger"
+                >
+                  <FontAwesomeIcon icon={faSquareXmark} size="lg" />
+                </Button>
+              </td>
+            </tr>
           ))}
         </tbody>
+
       </Table>
+      <div className="pagination">
+          <Button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1}
+            color="primary"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} size="lg" />
+          </Button>
+          <span> Pagina: {currentPage}</span>
+          <Button
+            onClick={handleNextPage}
+            disabled={dataState.length < 10}
+            color="primary"
+          >
+            <FontAwesomeIcon icon={faArrowRight} size="lg" />
+          </Button>
+        </div>
 
       <ModalA
         isOpenA={isOpenActualizar}
@@ -99,7 +149,7 @@ function Administradores() {
         cedula={IdUser}
         onCreateUsuario={onCreateUsuario}
       />
-       <ModalCrear
+      <ModalCrear
         isOpenA={isOpenCrear}
         closeModal={closeModalCrear}
         onCreateUsuario={onCreateUsuario}

@@ -10,8 +10,10 @@ import React, { useEffect, useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
 import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
+import "./modal.css";
 
 function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
+  const [errors, setErrors] = useState({});
   const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const initialFormState = {
     nombre: "",
@@ -31,10 +33,41 @@ function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
     setForm(initialFormState);
   };
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm({
       ...form,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Realizar validaciones en tiempo real
+    validateField(name, value);
+  };
+
+  const validateField = (fieldName, value) => {
+    let fieldErrors = { ...errors };
+
+    switch (fieldName) {
+      case "contrasena":
+        fieldErrors.contrasena =
+          value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
+        break;
+      case "telefono":
+        fieldErrors.telefono =
+          value.length !== 8 || isNaN(Number(value))
+            ? "El teléfono debe tener 8 números y ser solo números"
+            : "";
+        break;
+      case "rol":
+        fieldErrors.rol =
+          value !== "Admin" && value !== "Super Admin"
+            ? "El rol debe ser 'Admin' o 'Super Admin'"
+            : "";
+        break;
+      default:
+        break;
+    }
+
+    setErrors(fieldErrors);
   };
 
   const cerrarModalActualizar = () => {
@@ -42,6 +75,7 @@ function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
   };
 
   const editar = async () => {
+    console.log(cedula)
     try {
       const usuario = doc(db, "Usuarios", cedula);
       console.log(usuario)
@@ -56,6 +90,8 @@ function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
       console.log("Document successfully updated!");
       onCreateUsuario();
       closeModal();
+      window.alert("Se creo el Administrador con exito");
+
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -70,9 +106,10 @@ function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
       </ModalHeader>
 
       <ModalBody>
-        <FormGroup>
-          <label>nombre:</label>
+      <FormGroup>
+          <label>Nombre:</label>
           <input
+          required 
             className="form-control"
             type="text"
             name="nombre"
@@ -80,37 +117,41 @@ function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
             onChange={handleChange}
           />
         </FormGroup>
-
-        <FormGroup>
-          <label>Telefono:</label>
+        <FormGroup className={errors.contrasena ? "error" : ""}>
+          <label>Teléfono:</label>
           <input
+          required 
             className="form-control"
             name="telefono"
             type="tel"
             onChange={handleChange}
             value={form.telefono}
           />
+          {errors.telefono && <div className="error">{errors.telefono}</div>}
         </FormGroup>
-
-        <FormGroup>
+        <FormGroup className={errors.correo ? "error" : ""}>
           <label>Correo:</label>
           <input
+          required 
             className="form-control"
             name="correo"
             type="email"
             onChange={handleChange}
             value={form.correo}
           />
+          {errors.correo && <div className="error">{errors.correo}</div>}
         </FormGroup>
-        <FormGroup>
+        <FormGroup className={errors.rol ? "error" : ""}>
           <label>Rol:</label>
           <input
+          required 
             className="form-control"
             name="rol"
             type="text"
             onChange={handleChange}
             value={form.rol}
           />
+          {errors.rol && <div className="error">{errors.rol}</div>}
         </FormGroup>
       </ModalBody>
 

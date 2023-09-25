@@ -2,6 +2,7 @@ import {
   BrowserRouter as Router, 
   Routes, 
   Route } from 'react-router-dom';
+
 import "./App.css";
 import TopNavBar from "./components/navbarC/navbar";
 import "bootstrap/dist/css/bootstrap.min.css";

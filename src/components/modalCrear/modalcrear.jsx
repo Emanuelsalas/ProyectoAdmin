@@ -3,6 +3,7 @@ import { doc, setDoc } from "firebase/firestore";
 import appFirebase from "../../firebase/firebase.config";
 import { getFirestore } from "firebase/firestore";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import "../modal/modal.css";
 import {
   Modal,
   ModalHeader,
@@ -13,6 +14,7 @@ import {
 } from "reactstrap";
 
 function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
+  const [errors, setErrors] = useState({});
   const db = getFirestore(appFirebase);
   const auth = getAuth();
   const initialFormState = {
@@ -36,10 +38,47 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
   };
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setForm({
       ...form,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
+
+    // Realizar validaciones en tiempo real
+    validateField(name, value);
+  };
+
+  const validateField = (fieldName, value) => {
+    let fieldErrors = { ...errors };
+
+    switch (fieldName) {
+      case "cedula":
+        fieldErrors.cedula =
+          value.length !== 9 || isNaN(Number(value))
+            ? "La cédula debe tener 9 caracteres y ser solo números"
+            : "";
+        break;
+      case "contrasena":
+        fieldErrors.contrasena =
+          value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
+        break;
+      case "telefono":
+        fieldErrors.telefono =
+          value.length !== 8 || isNaN(Number(value))
+            ? "El teléfono debe tener 8 números y ser solo números"
+            : "";
+        break;
+      case "rol":
+        fieldErrors.rol =
+          value !== "Admin" && value !== "Super Admin"
+            ? "El rol debe ser 'Admin' o 'Super Admin'"
+            : "";
+        break;
+      default:
+        break;
+    }
+
+    setErrors(fieldErrors);
   };
 
   const cerrarModalCrear = () => {
@@ -83,6 +122,7 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
       console.log("Usuario creado y documentado en Firestore");
       onCreateUsuario();
       closeModal();
+      window.alert("Se creo el Administrador con exito");
     } catch (error) {
       console.error("Error al crear usuario y documentar en Firestore: ", error);
     }
@@ -97,19 +137,23 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
       </ModalHeader>
 
       <ModalBody>
-        <FormGroup>
+      <FormGroup className={errors.cedula ? "error" : ""  }>
           <label>Cedula:</label>
           <input
+            required
             className="form-control"
             type="text"
             name="cedula"
+            placeholder="101110111"
             value={form.cedula}
             onChange={handleChange}
           />
+          {errors.cedula && <div className="error">{errors.cedula}</div>}
         </FormGroup>
         <FormGroup>
           <label>Nombre:</label>
           <input
+          required 
             className="form-control"
             type="text"
             name="nombre"
@@ -117,45 +161,54 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
             onChange={handleChange}
           />
         </FormGroup>
-        <FormGroup>
+        <FormGroup className={errors.contrasena ? "error" : ""}>
           <label>Contraseña:</label>
           <input
+          required 
             className="form-control"
-            type="text"
+            type="password"
             name="contrasena"
+            placeholder="debe tener al menos 6 caracteres"
             value={form.contrasena}
             onChange={handleChange}
           />
+          {errors.contrasena && <div className="error">{errors.contrasena}</div>}
         </FormGroup>
-        <FormGroup>
+        <FormGroup className={errors.contrasena ? "error" : ""}>
           <label>Teléfono:</label>
           <input
+          required 
             className="form-control"
             name="telefono"
             type="tel"
             onChange={handleChange}
             value={form.telefono}
           />
+          {errors.telefono && <div className="error">{errors.telefono}</div>}
         </FormGroup>
-        <FormGroup>
+        <FormGroup className={errors.correo ? "error" : ""}>
           <label>Correo:</label>
           <input
+          required 
             className="form-control"
             name="correo"
             type="email"
             onChange={handleChange}
             value={form.correo}
           />
+          {errors.correo && <div className="error">{errors.correo}</div>}
         </FormGroup>
-        <FormGroup>
+        <FormGroup className={errors.rol ? "error" : ""}>
           <label>Rol:</label>
           <input
+          required 
             className="form-control"
             name="rol"
             type="text"
             onChange={handleChange}
             value={form.rol}
           />
+          {errors.rol && <div className="error">{errors.rol}</div>}
         </FormGroup>
       </ModalBody>
 
