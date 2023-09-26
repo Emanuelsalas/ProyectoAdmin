@@ -18,6 +18,7 @@ import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
 
 function Administradores() {
+  const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     obtenerUsuarios(1); // Fetch the first page of users
@@ -30,6 +31,18 @@ function Administradores() {
   const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
     useModal(false);
   const [dataState, setData] = useState([]);
+
+  const filteredUsers = dataState.filter(
+    (user) =>
+      user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  filteredUsers.map((dato) => (
+    <tr key={dato.idUser}>
+      {/* Rest of your code */}
+    </tr>
+  ));
   const abrirModalActualizar = (cedula) => {
     console.log(cedula);
     setCedula(cedula);
@@ -84,7 +97,14 @@ function Administradores() {
       <Button onClick={openModalCrear} color="success">
         Crear
       </Button>
-      <br />
+
+      <input
+      type="text"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      placeholder="Search by name"
+    />
+          <br />
       <br />
       <Table>
         <thead>
@@ -99,30 +119,30 @@ function Administradores() {
         </thead>
 
         <tbody>
-          {dataState.map((dato) => (
-            <tr key={dato.idUser}>
-              <td>{dato.cedula}</td>
-              <td>{dato.nombre}</td>
-              <td>{dato.telefono}</td>
-              <td>{dato.correoElectronico}</td>
-              <td>{dato.rol}</td>
-              <td>
-                <Button
-                  onClick={() => abrirModalActualizar(dato.idUser)}
-                  color="primary"
-                >
-                  <FontAwesomeIcon icon={faPenToSquare} size="lg" />
-                </Button>
-                <Button
-                  onClick={() => abrirModalEliminar(dato.idUser)}
-                  color="danger"
-                >
-                  <FontAwesomeIcon icon={faSquareXmark} size="lg" />
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+        {filteredUsers.map((dato) => (
+          <tr key={dato.idUser}>
+            <td>{dato.cedula}</td>
+            <td>{dato.nombre}</td>
+            <td>{dato.telefono}</td>
+            <td>{dato.correoElectronico}</td>
+            <td>{dato.rol}</td>
+            <td>
+              <Button
+                onClick={() => abrirModalActualizar(dato.idUser)}
+                color="primary"
+              >
+                <FontAwesomeIcon icon={faPenToSquare} size="lg" />
+              </Button>
+              <Button
+                onClick={() => abrirModalEliminar(dato.idUser)}
+                color="danger"
+              >
+                <FontAwesomeIcon icon={faSquareXmark} size="lg" />
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
 
       </Table>
       <div className="pagination">
