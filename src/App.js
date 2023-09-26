@@ -9,6 +9,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import Administrador from './pages/Administradores/administradores';
 import { ProtectedRoutes } from './components/ProtectRoutes';
 import { useState } from 'react';
+import Sedes from './pages/Sede/sedeV';
 const numbers = [3454, 3455, 34545];
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
       {/*   <Route element={<ProtectedRoutes isAllowed={!!user && user.rol =="Admin"}/>} redirecTo="/" > */ }
       <Route path='/Administradores' element={<Administrador />} /> 
       <Route path='/Cajas' element={<h1>Cajas</h1>} />
-      <Route path='/Sedes' element={<h1>Sedes</h1>} />
+      <Route path='/Sedes' element={<Sedes/>} />
  {/*     </Route> */ }
       
     </Routes>
