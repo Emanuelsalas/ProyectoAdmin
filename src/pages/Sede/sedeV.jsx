@@ -143,18 +143,18 @@ function Sedes() {
           </Button>
         </div>
 
-      <ModalA
+      <ModiSede
         isOpenA={isOpenActualizarS}
         closeModal={closeModalActualizarS}
         cedula={IdUser}
         onCreateUsuario={onCreateUsuario}
       />
-      <ModalCrear
+      <ModalCrearS
         isOpenA={isOpenCrear}
         closeModal={closeModalCrear}
         onCreateUsuario={onCreateUsuario}
       />
-      <ModalEliminar
+      <ModalEliminarS
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
         userIdToDelete={IdUser}
