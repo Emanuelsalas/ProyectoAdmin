@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
-import appFirebase from "../../firebase/firebase.config";
-import { getFirestore } from "firebase/firestore";
-import {  getAuth } from "firebase/auth";
+import {dbPVH} from "../../firebase/firebase.config";
 import "../modal/modal.css";
 import {
   Modal,
@@ -13,38 +10,31 @@ import {
   Button,
 } from "reactstrap";
 
-function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
+function ModalCrearS() {
+  const [isOpen, setIsOpen] = useState(false);
   const [errors, setErrors] = useState({});
-  const db = getFirestore(appFirebase);
-  const auth = getAuth();
-  const initialFormState = {
-    nombre: "",
-    encargado: "",
-    telefono: "",
-    correo: "",
-    direcion: "",
-    foto: "",
-    estado: "",
+  const [sedeNueva, setSedeNueva] = useState({
+    cnombre: '',
+    encargado: '',
+    telefono: '',
+    correo: '',
+    direcion: '',
+    foto: '',
+  });
+  const openModal = () => {
+    setIsOpen(true);
   };
-  const [form, setForm] = useState(initialFormState);
 
-  useEffect(() => {
-    if (!isOpenA) {
-      resetForm();
-    }
-  }, [isOpenS]);
-
-  const resetForm = () => {
-    setForm(initialFormState);
+  const closeModal = () => {
+    setIsOpen(false);
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({
-      ...form,
+    setSedeNueva({
+      ...sedeNueva,
       [name]: value,
     });
-
     // Realizar validaciones en tiempo real
     validateField(name, value);
   };
@@ -59,58 +49,45 @@ function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
             ? "El teléfono debe tener 8 números y ser solo números"
             : "";
         break;
-      case "rol":
-        fieldErrors.rol =
-        value !== "Activa" || value !== "Inactiva" || value !== "Pendiente"
-        ? "El estado debe ser 'Activa' o 'Inactiva' o 'Pendiente' "
-        : "";
-        break;
       default:
         break;
     }
 
     setErrors(fieldErrors);
   };
+  const crearSede = async (e) => {
+    e.preventDefault();
 
-  const cerrarModalCrearS = () => {
-    closeModalS();
-  };
-
-  const crearSede = async () => {
     try {
-      // Obtener el ID de usuario del usuario creado
-      const idUser = sedeCredential.user.uid;
-      console.log(idUser)
-      // Agregar información del usuario a Firestore
-      await setDoc(doc(db, "Sede", idUser), {
+      // Agrega un nuevo documento a la colección "tuColeccion"
+      await dbPVH.collection('Sede').add(sedeNueva);
 
-        idUser: idUser,
-        nombre: form.nombre,
-        correoElectronico: form.correo,
-        encargado: form.encargado,
-        foto: form.foto,
-        estado: form.estado,
-        telefono: form.telefono,
+      // Reinicia los campos del formulario
+      setSedeNueva({
+        nombre: "",
+        correoElectronico: "",
+        encargado: "",
+        foto: "",
+        estado: "",
+        telefono: "",
         direccionExacta: {
           provincia: "",
           canton: "",
           distrito: "",
           direccionCompleta: "",
-        },
+        }
       });
-      onCreateSede();
-      closeModalS();
-      console.log("Sede creado y documentado en Firestore");
+      closeModal(); // Cierra el modal después de agregar el dato
+      console.log('Sede agregada correctamente');
     } catch (error) {
-      console.error("Error al crear sede  y documentar en Firestore: ", error);
+      console.error('Error al agregar Sede:', error);
     }
   };
-
   return (
-    <Modal isOpen={isOpenA} toggle={cerrarModalCrearS}>
+    <Modal isOpen={openModal} toggle={closeModal}>
       <ModalHeader>
         <div>
-          <h3>Crear administrador</h3>
+          <h3>Crear Sede</h3>
         </div>
       </ModalHeader>
 
@@ -122,7 +99,7 @@ function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
             className="form-control"
             type="text"
             name="nombre"
-            value={form.nombre}
+            value={sedeNueva.nombre}
             onChange={handleChange}
           />
           {errors.cedula && <div className="error">{errors.cedula}</div>}
@@ -134,7 +111,7 @@ function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
             className="form-control"
             type="text"
             name="encargado"
-            value={form.encargado}
+            value={sedeNueva.encargado}
             onChange={handleChange}
           />
         </FormGroup>
@@ -146,7 +123,7 @@ function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
             name="telefono"
             type="tel"
             onChange={handleChange}
-            value={form.telefono}
+            value={sedeNueva.telefono}
           />
           {errors.telefono && <div className="error">{errors.telefono}</div>}
         </FormGroup>
@@ -158,31 +135,19 @@ function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
             name="correo"
             type="email"
             onChange={handleChange}
-            value={form.correo}
+            value={sedeNueva.correo}
           />
           {errors.correo && <div className="error">{errors.correo}</div>}
         </FormGroup>
         <FormGroup className={errors.rol ? "error" : ""}>
-          <label>Rol:</label>
+          <label>Foto:</label>
           <input
           required 
             className="form-control"
             name="foto"
             type="text"
             onChange={handleChange}
-            value={form.foto}
-          />
-          {errors.rol && <div className="error">{errors.rol}</div>}
-        </FormGroup>
-        <FormGroup className={errors.rol ? "error" : ""}>
-          <label>Rol:</label>
-          <input
-          required 
-            className="form-control"
-            name="estado"
-            type="text"
-            onChange={handleChange}
-            value={form.estado}
+            value={sedeNueva.foto}
           />
           {errors.rol && <div className="error">{errors.rol}</div>}
         </FormGroup>
@@ -192,12 +157,11 @@ function ModalCrearS({ isOpenS, closeModalS,  onCreateSede}) {
         <Button color="primary" onClick={crearSede}>
           Crear
         </Button>
-        <Button color="danger" onClick={cerrarModalCrearS}>
+        <Button color="danger" onClick={closeModal}>
           Cancelar
         </Button>
       </ModalFooter>
     </Modal>
   );
 }
-
 export default ModalCrearS;
