@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
-import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
-import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
+import { dbPVH } from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
 import { collection, getDocs } from "firebase/firestore";
 import { useModal } from "../../hooks/useModal";
 import ModiSede from "../../components/modal/modificarSede";
 import ModalCrearS from "../../components/modalCrear/modalCrearSede";
 import ModalEliminarS from "../../components/modalEliminar/modalEliminarSe";
-import "./administradores.css";
+import "../Sede/sedeE.css"
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Container } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -23,34 +22,33 @@ function Sedes() {
     obtenerSedes(1); // Fetch the first page of users
   }, []);
   const [IdUser, setCedula] = useState(0);
-  const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const [isOpenActualizarS, openModalActualizarS, closeModalActualizarS] =
     useModal(false);
   const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
   const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
     useModal(false);
   const [dataState, setData] = useState([]);
-  const abrirModalActualizar = (cedula) => {
-    console.log(cedula);
-    setCedula(cedula);
-    console.log(cedula);
+  const abrirModalActualizar = (nombre) => {
+    console.log(nombre);
+    setCedula(nombre);
+    console.log(nombre);
     openModalActualizarS();
   };
-  const abrirModalEliminar = (cedula) => {
-    setCedula(cedula);
-    console.log(cedula);
+  const abrirModalEliminar = (nombre) => {
+    setCedula(nombre);
+    console.log(nombre);
     openModalEliminar();
   };
   const handleNextPage = () => {
     // Increment the page and fetch the next page of users
-    obtenerUsuarios(currentPage + 1);
+    obtenerSedes(currentPage + 1);
     setCurrentPage((prevPage) => prevPage + 1);
   };
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
       // Decrement the page and fetch the previous page of users
-      obtenerUsuarios(currentPage - 1);
+      obtenerSedes(currentPage - 1);
       setCurrentPage((prevPage) => prevPage - 1);
     }
   };
@@ -59,7 +57,7 @@ function Sedes() {
       const usersPerPage = 10; // Number of data to fetch per page
       const startIndex = (page - 1) * usersPerPage;
 
-      const userRef = collection(db, "Sede");
+      const userRef = collection(dbPVH, "Sede");
       const userSnapshot = await getDocs(userRef);
       const allUsers = userSnapshot.docs
         .map((user) => user.data())
@@ -74,7 +72,7 @@ function Sedes() {
   };
   const onCreateUsuario = () => {
     // Actualizar la lista de sedes llamando a obtenerUsuarios nuevamente
-    obtenerUsuarios();
+    obtenerSedes();
   };
 
   return (
@@ -143,18 +141,18 @@ function Sedes() {
           </Button>
         </div>
 
-      <ModalA
+      <ModiSede
         isOpenA={isOpenActualizarS}
         closeModal={closeModalActualizarS}
         cedula={IdUser}
         onCreateUsuario={onCreateUsuario}
       />
-      <ModalCrear
+      <ModalCrearS
         isOpenA={isOpenCrear}
         closeModal={closeModalCrear}
         onCreateUsuario={onCreateUsuario}
       />
-      <ModalEliminar
+      <ModalEliminarS
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
         userIdToDelete={IdUser}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
-import { db } from './firebase';
+import { dbPVH } from "../../firebase/firebase.config";
 /* Pendiente para la vercion 2*/
 function ComboBoxWithList() {
     const [isOpen, setIsOpen] = useState(false);
@@ -44,7 +44,7 @@ function ProductListModal({ isOpen, closeModal }) {
     const [filteredProducts, setFilteredProducts] = useState([]);
   
     useEffect(() => {
-      db.collection('Usuarios')
+      dbPVH.collection('Usuarios')
         .where('rol', '==', "Admin",'||','rol','==',"Super Admin")
         .get()
         .then((querySnapshot) => {

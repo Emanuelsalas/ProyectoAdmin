@@ -8,13 +8,11 @@ import {
   } from "reactstrap";
   import React, { useEffect, useState } from "react";
   import { doc, updateDoc } from "firebase/firestore";
-  import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
-  import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
+  import {dbPVH} from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
   import "./modal.css";
   
   function ModiSede({ isOpenA, closeModal, nombreS,onCreateSede }) {
     const [errors, setErrors] = useState({});
-    const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
     const initialFormState = {
       nombre: "",
       encargado: "",
@@ -75,7 +73,7 @@ import {
     const editar = async () => {
       console.log(nombreS)
       try {
-        const usuario = doc(db, "Sede", nombreS);
+        const usuario = doc(dbPVH, "Sede", nombreS);
         console.log(usuario)
         console.log('Formulario:', form);
   
