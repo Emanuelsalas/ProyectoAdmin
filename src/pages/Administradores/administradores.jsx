@@ -16,14 +16,16 @@ import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
+const atributosDeBusqueda = ['cedula','nombre'];
 
 function Administradores() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAttribute, setSelectedAttribute] = useState(atributosDeBusqueda[0]); // Inicialmente selecciona el primer atributo
   const [currentPage, setCurrentPage] = useState(1);
+  const [usuario, setUsuario] = useState([]);
   useEffect(() => {
     obtenerUsuarios(1); // Fetch the first page of users
   }, []);
-  const [IdUser, setCedula] = useState(0);
   const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const [isOpenActualizar, openModalActualizar, closeModalActualizar] =
     useModal(false);
@@ -45,12 +47,12 @@ function Administradores() {
   ));
   const abrirModalActualizar = (cedula) => {
     console.log(cedula);
-    setCedula(cedula);
+    setUsuario(cedula);
     console.log(cedula);
     openModalActualizar();
   };
   const abrirModalEliminar = (cedula) => {
-    setCedula(cedula);
+    setUsuario(cedula);
     console.log(cedula);
     openModalEliminar();
   };
@@ -88,37 +90,27 @@ function Administradores() {
   };
   const onCreateUsuario = () => {
     // Actualizar la lista de usuarios llamando a obtenerUsuarios nuevamente
-    obtenerUsuarios();
+    obtenerUsuarios(1);
   };
 
   return (
     <Container>
       <br />
-      <Button onClick={openModalCrear} color="success">
-        Crear
-      </Button>
-
-      <input
+    <Button onClick={openModalCrear} color="success">
+      Crear
+    </Button>
+    <br />
+    <br />
+    <input
       type="text"
       value={searchQuery}
       onChange={(e) => setSearchQuery(e.target.value)}
       placeholder="Search by name"
     />
-          <br />
-      <br />
-      <Table>
-        <thead>
-          <tr>
-            <th>Cedula</th>
-            <th>Nombre</th>
-            <th>Telefono</th>
-            <th>Coreo Electronico</th>
-            <th>Rol</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-
-        <tbody>
+    <Table>
+      <thead>
+      </thead>
+      <tbody>
         {filteredUsers.map((dato) => (
           <tr key={dato.idUser}>
             <td>{dato.cedula}</td>
@@ -128,13 +120,13 @@ function Administradores() {
             <td>{dato.rol}</td>
             <td>
               <Button
-                onClick={() => abrirModalActualizar(dato.idUser)}
+                onClick={() => abrirModalActualizar(dato)}
                 color="primary"
               >
                 <FontAwesomeIcon icon={faPenToSquare} size="lg" />
               </Button>
               <Button
-                onClick={() => abrirModalEliminar(dato.idUser)}
+                onClick={() => abrirModalEliminar(dato)}
                 color="danger"
               >
                 <FontAwesomeIcon icon={faSquareXmark} size="lg" />
@@ -143,30 +135,33 @@ function Administradores() {
           </tr>
         ))}
       </tbody>
-
-      </Table>
-      <div className="pagination">
-          <Button
-            onClick={handlePrevPage}
-            disabled={currentPage === 1}
-            color="primary"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} size="lg" />
-          </Button>
-          <span> Pagina: {currentPage}</span>
-          <Button
-            onClick={handleNextPage}
-            disabled={dataState.length < 10}
-            color="primary"
-          >
-            <FontAwesomeIcon icon={faArrowRight} size="lg" />
-          </Button>
-        </div>
+    </Table>
+    <div className="pagination">
+      <Button
+        onClick={handlePrevPage}
+        disabled={currentPage === 1}
+        color="primary"
+      >
+        <FontAwesomeIcon icon={faArrowLeft} size="lg" />
+      </Button>
+      <span> Pagina: {currentPage}</span>
+      <Button
+        onClick={handleNextPage}
+        disabled={dataState.length < 10}
+        color="primary"
+      >
+        <FontAwesomeIcon icon={faArrowRight} size="lg" />
+      </Button>
+    </div>
 
       <ModalA
         isOpenA={isOpenActualizar}
         closeModal={closeModalActualizar}
-        cedula={IdUser}
+        cedula={usuario.idUser}
+        nombre={usuario.nombre}
+        telefono={usuario.telefono}
+        correo={usuario.correoElectronico}
+        rol={usuario.rol}
         onCreateUsuario={onCreateUsuario}
       />
       <ModalCrear
@@ -177,7 +172,8 @@ function Administradores() {
       <ModalEliminar
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
-        userIdToDelete={IdUser}
+        userIdToDelete={usuario.idUser}
+        nombre={usuario.nombre}
         onDeleteUsuario={onCreateUsuario}
       />
     </Container>
