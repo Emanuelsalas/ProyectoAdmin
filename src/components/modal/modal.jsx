@@ -12,23 +12,32 @@ import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo
 import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
 import "./modal.css";
 
-function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
+function ModalA({ isOpenA, closeModal, cedula,nombre,telefono,correo,rol,onCreateUsuario }) {
   const [errors, setErrors] = useState({});
   const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const initialFormState = {
-    nombre: "",
-    telefono: "",
-    correo: "",
-    rol: "",
+    nombre: nombre,
+    telefono: telefono,
+    correo: correo, 
+    rol: rol,
   };
   const [form, setForm] = useState(initialFormState);
+  
 
   useEffect(() => {
     // Reset the form whenever isOpenA changes (modal is opened/closed)
     if (!isOpenA) {
       resetForm();
+    } else {
+      // If modal is opened, populate the form with user data
+      setForm({
+        nombre: nombre,
+        telefono: telefono,
+        correo: correo,
+        rol: rol,
+      });
     }
-  }, [isOpenA]);
+  }, [isOpenA, nombre, telefono, correo, rol]);
   const resetForm = () => {
     setForm(initialFormState);
   };
@@ -98,7 +107,7 @@ function ModalA({ isOpenA, closeModal, cedula,onCreateUsuario }) {
   };
 
   return (
-    <Modal isOpen={isOpenA} toggle={cerrarModalActualizar}>
+    <Modal isOpen={isOpenA} toggle={cerrarModalActualizar} backdrop="static">
       <ModalHeader>
         <div>
           <h3>Editar administrador</h3>
