@@ -9,15 +9,8 @@ import{getFirestore,collection,addDoc,getDocs,doc,getDoc,query,where,setDoc,dele
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-const firebaseConfig1 = {
-  apiKey: "AIzaSyD8XvkZdxdTX48xg-QhosIV1BPREB1jkRk",
-  authDomain: "homasoutlet-e9ecc.firebaseapp.com",
-  projectId: "homasoutlet-e9ecc",
-  storageBucket: "homasoutlet-e9ecc.appspot.com",
-  messagingSenderId: "34461657343",
-  appId: "1:34461657343:web:18895a320e4322640b04ca"
-};
-const firebaseConfig = {
+
+const PuntoVentaHomas = {
   apiKey: process.env.REACT_APP_APIKEY,
   authDomain: process.env.REACT_APP_ADOMAIN,
   projectId: process.env.REACT_APP_PROYECID,
@@ -26,10 +19,21 @@ const firebaseConfig = {
   appId: process.env.REACT_APP_APPID,
   measurementId: process.env.REACT_APP_MESUREID
 }; 
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig1);
-const appPVH = initializeApp(firebaseConfig);
+const HomasHolet = {
+  apiKey: "AIzaSyBmPc_wbbTku4KgnZcmGWPpAb1A6KBgD7s",
+  authDomain: "pruebaproyecto-1f0ba.firebaseapp.com",
+  projectId: "pruebaproyecto-1f0ba",
+  storageBucket: "pruebaproyecto-1f0ba.appspot.com",
+  messagingSenderId: "437685734652",
+  appId: "1:437685734652:web:47cee0f48febbbcf31db79",
+  measurementId: "G-4KRXZR31JG"
+}
+// Coneccion homas
+const app = initializeApp(HomasHolet,"pruebaproyecto-1f0ba");
+export const db = getFirestore(app);
+const analytics = getAnalytics(app);
+//Coneccion punto de venta
+const appPVH = initializeApp(PuntoVentaHomas,"homaspuntoventa");
 export const analyticsPVH = getAnalytics(appPVH);
 export const authPVH = getAuth(appPVH);
 export const dbPVH = getFirestore(appPVH);

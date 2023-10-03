@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { doc, deleteDoc } from "firebase/firestore";
-import {dbPVH} from "../../firebase/firebase.config";
-import { Modal, ModalHeader, ModalFooter, Button } from "reactstrap";
+import dbPVH from "../../firebase/firebase.config";
+import { Modal, ModalHeader, ModalFooter, Button,ModalBody } from "reactstrap";
 import "../modal/modal.css";
 
-function ModalEliminarS({ isOpen, closeModal, userIdToDelete, onDeleteUsuario }) {
+function ModalEliminarS({ isOpen, closeModal, userIdToDelete, nombre,onDeleteUsuario }) {
 
   const cerrarModalEliminar = () => {
     closeModal();
@@ -30,7 +30,9 @@ function ModalEliminarS({ isOpen, closeModal, userIdToDelete, onDeleteUsuario })
           <h3>Eliminar Sede</h3>
         </div>
       </ModalHeader>
-
+      <ModalBody>
+        <h4>Realmente desea eliminar este usuario: {nombre}?</h4>
+      </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={eliminarUsuario}>
           Eliminar
@@ -42,5 +44,5 @@ function ModalEliminarS({ isOpen, closeModal, userIdToDelete, onDeleteUsuario })
     </Modal>
   );
 }
-
+//asd
 export default ModalEliminarS;

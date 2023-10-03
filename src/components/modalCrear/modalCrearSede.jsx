@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {dbPVH} from "../../firebase/firebase.config";
+import dbPVH from "../../firebase/firebase.config";
 import "../modal/modal.css";
 import {
   Modal,
@@ -9,26 +9,27 @@ import {
   ModalFooter,
   Button,
 } from "reactstrap";
-
-function ModalCrearS() {
-  const [isOpen, setIsOpen] = useState(false);
+//Crear
+function ModalCrearS({isOpenS,isCloseS,onCreate}) {
   const [errors, setErrors] = useState({});
-  const [sedeNueva, setSedeNueva] = useState({
-    cnombre: '',
+  const initialFormState = {
+    nombre: '',
     encargado: '',
     telefono: '',
     correo: '',
     direcion: '',
     foto: '',
-  });
-  const openModal = () => {
-    setIsOpen(true);
-  };
+  }
+  const [sedeNueva, setSedeNueva] = useState(initialFormState);
+  useEffect(() => {
+    if (!isOpenS) {
+      resetForm();
+    }
+  }, [isOpenS]);
 
-  const closeModal = () => {
-    setIsOpen(false);
+  const resetForm = () => {
+    setSedeNueva(initialFormState);
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setSedeNueva({
@@ -77,14 +78,15 @@ function ModalCrearS() {
           direccionCompleta: "",
         }
       });
-      closeModal(); // Cierra el modal después de agregar el dato
+      isCloseS(); // Cierra el modal después de agregar el dato
+      onCreate();
       console.log('Sede agregada correctamente');
     } catch (error) {
       console.error('Error al agregar Sede:', error);
     }
   };
   return (
-    <Modal isOpen={openModal} toggle={closeModal}>
+    <Modal isOpen={isOpenS} toggle={isCloseS}>
       <ModalHeader>
         <div>
           <h3>Crear Sede</h3>
@@ -92,8 +94,8 @@ function ModalCrearS() {
       </ModalHeader>
 
       <ModalBody>
-      <FormGroup className={errors.cedula ? "error" : ""  }>
-          <label>Cedula:</label>
+      <FormGroup className={errors.nombre ? "error" : ""  }>
+          <label>Nombre:</label>
           <input
             required
             className="form-control"
@@ -102,10 +104,10 @@ function ModalCrearS() {
             value={sedeNueva.nombre}
             onChange={handleChange}
           />
-          {errors.cedula && <div className="error">{errors.cedula}</div>}
+          {errors.nombre && <div className="error">{errors.nombre}</div>}
         </FormGroup>
         <FormGroup>
-          <label>Nombre:</label>
+          <label>Encargado:</label>
           <input
           required 
             className="form-control"
@@ -115,7 +117,7 @@ function ModalCrearS() {
             onChange={handleChange}
           />
         </FormGroup>
-        <FormGroup className={errors.contrasena ? "error" : ""}>
+        <FormGroup className={errors.telefono ? "error" : ""}>
           <label>Teléfono:</label>
           <input
           required 
@@ -139,7 +141,7 @@ function ModalCrearS() {
           />
           {errors.correo && <div className="error">{errors.correo}</div>}
         </FormGroup>
-        <FormGroup className={errors.rol ? "error" : ""}>
+        <FormGroup className={errors.foto ? "error" : ""}>
           <label>Foto:</label>
           <input
           required 
@@ -149,7 +151,7 @@ function ModalCrearS() {
             onChange={handleChange}
             value={sedeNueva.foto}
           />
-          {errors.rol && <div className="error">{errors.rol}</div>}
+          {errors.foto && <div className="error">{errors.foto}</div>}
         </FormGroup>
       </ModalBody>
 
@@ -157,7 +159,7 @@ function ModalCrearS() {
         <Button color="primary" onClick={crearSede}>
           Crear
         </Button>
-        <Button color="danger" onClick={closeModal}>
+        <Button color="danger" onClick={isCloseS}>
           Cancelar
         </Button>
       </ModalFooter>

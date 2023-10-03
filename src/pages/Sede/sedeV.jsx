@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { dbPVH } from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
+import dbPVH from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
 import { collection, getDocs } from "firebase/firestore";
 import { useModal } from "../../hooks/useModal";
 import ModiSede from "../../components/modal/modificarSede";
@@ -15,13 +15,13 @@ import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
-
+//vis
 function Sedes() {
   const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     obtenerSedes(1); // Fetch the first page of users
   }, []);
-  const [IdUser, setCedula] = useState(0);
+  const [NombreSede, setNombreS] = useState("");
   const [isOpenActualizarS, openModalActualizarS, closeModalActualizarS] =
     useModal(false);
   const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
@@ -29,13 +29,13 @@ function Sedes() {
     useModal(false);
   const [dataState, setData] = useState([]);
   const abrirModalActualizar = (nombre) => {
-    console.log(nombre);
-    setCedula(nombre);
-    console.log(nombre);
+    console.log("actualizar",nombre);
+    setNombreS(nombre);
+    console.log("actualiza",NombreSede);
     openModalActualizarS();
   };
   const abrirModalEliminar = (nombre) => {
-    setCedula(nombre);
+    setNombreS(nombre);
     console.log(nombre);
     openModalEliminar();
   };
@@ -60,7 +60,7 @@ function Sedes() {
       const userRef = collection(dbPVH, "Sede");
       const userSnapshot = await getDocs(userRef);
       const allUsers = userSnapshot.docs
-        .map((user) => user.data())
+        .map((user) => user.data());
 
       // Calculate the slice of data for the current page
       const slicedUsers = allUsers.slice(startIndex, startIndex + usersPerPage);
@@ -98,21 +98,21 @@ function Sedes() {
         <tbody>
           {dataState.map((dato) => (
             <tr key={dato.idUser}>
-              <td>{dato.nombre}</td>
-              <td>{dato.encargado}</td>
-              <td>{dato.telefono}</td>
-              <td>{dato.correoElectronico}</td>
-              <td>{dato.direccion}</td>
-              <td>{dato.estado}</td>
+              <td>{dato.Nombre}</td>
+              <td>{dato.Encargado}</td>
+              <td>{dato.Telefono}</td>
+              <td>{dato.Correo}</td>
+              <td>{dato.Direccion}</td>
+              <td>{dato.Estado}</td>
               <td>
                 <Button
-                  onClick={() => abrirModalActualizar(dato.idUser)}
+                  onClick={() => abrirModalActualizar(dato.Nombre)}
                   color="primary"
                 >
                   <FontAwesomeIcon icon={faPenToSquare} size="lg" />
                 </Button>
                 <Button
-                  onClick={() => abrirModalEliminar(dato.idUser)}
+                  onClick={() => abrirModalEliminar(dato.Nombre)}
                   color="danger"
                 >
                   <FontAwesomeIcon icon={faSquareXmark} size="lg" />
@@ -144,7 +144,7 @@ function Sedes() {
       <ModiSede
         isOpenA={isOpenActualizarS}
         closeModal={closeModalActualizarS}
-        cedula={IdUser}
+        cedula={NombreSede}
         onCreateUsuario={onCreateUsuario}
       />
       <ModalCrearS
@@ -155,7 +155,7 @@ function Sedes() {
       <ModalEliminarS
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
-        userIdToDelete={IdUser}
+        userIdToDelete={NombreSede}
         onDeleteUsuario={onCreateUsuario}
       />
     </Container>

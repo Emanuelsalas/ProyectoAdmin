@@ -1,76 +1,38 @@
 import React, { useState, useEffect } from 'react';
+import Select from 'react-select'
 import Modal from 'react-modal';
-import { dbPVH } from "../../firebase/firebase.config";
+import { collection, getDocs } from "firebase/firestore";
+import appFirebase from "../../firebase/firebase.config";
+import { db } from '../../firebase/firebase.config';
 /* Pendiente para la vercion 2*/
-function ComboBoxWithList() {
-    const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('');
-  
-    const options = ProductListModal;
-    const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
 
-  const handleOptionSelect = (option) => {
-    setSelectedOption(option);
-    setIsOpen(false);
+function  ComboBoxWithList() { 
+  const obtenerUsuarios = async (page) => {
+    try {
+      const userRef = collection(db, "Usuarios");
+      const userSnapshot = await getDocs(userRef);
+      const allUsers = userSnapshot.docs
+        .map((user) => user.data())
+        .filter((user) => user.rol === "Admin" || user.rol === "Super Admin");
+    } catch (error) {
+      console.error("Error al obtener usuarios: ", error);
+    }
   };
-
-  return (
-    <div>
-      <h2>ComboBox with List</h2>
-      <div className="combobox-container">
-        <button onClick={toggleDropdown} className="combobox-button">
-          {selectedOption || 'Selecciona una opción'}
-        </button>
-        {isOpen && (
-          <ul className="combobox-list">
-            {options.map((option, index) => (
-              <li
-                key={index}
-                className="combobox-item"
-                onClick={() => handleOptionSelect(option)}
-              >
-                {option}
-              </li>
-            ))}
-          </ul>
-        )}
+    const [iten,setIten] =useEffect(); 
+    const sliderU = ()=>{
+    const selectHanlerC=(event)=>{
+      console.log(event);
+      setIten(event);
+    }
+    return(
+      <div>
+        <p>Encargado: {iten}</p>
+        <Select
+        options={obtenerUsuarios}
+        onchange={selectHanlerC}
+      />
       </div>
-    </div>
-  );
-}
-function ProductListModal({ isOpen, closeModal }) {
-    const [filteredProducts, setFilteredProducts] = useState([]);
-  
-    useEffect(() => {
-      dbPVH.collection('Usuarios')
-        .where('rol', '==', "Admin",'||','rol','==',"Super Admin")
-        .get()
-        .then((querySnapshot) => {
-          const productsArray = [];
-          querySnapshot.forEach((doc) => {
-            productsArray.push({ id: doc.id, ...doc.data() });
-          });
-          setFilteredProducts(productsArray);
-        })
-        .catch((error) => {
-          console.error('Error al obtener datos:', error);
-        });
-    }, [category]); // El efecto se ejecutará cuando cambie la categoría
-  
-    return (
-      <Modal isOpen={isOpen} onRequestClose={closeModal}>
-        <h2>Productos de la categoría: {category}</h2>
-        <ul>
-          {filteredProducts.map((product) => (
-            <li key={product.id}>
-              Nombre: {product.nombre}, Precio: {product.precio}
-            </li>
-          ))}
-        </ul>
-        <button onClick={closeModal}>Cerrar Modal</button>
-      </Modal>
     );
-  }
+  };
+};
 export default ComboBoxWithList;
