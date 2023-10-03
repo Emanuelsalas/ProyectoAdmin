@@ -32,7 +32,7 @@ function ModalEliminar({ isOpen, closeModal, userIdToDelete, nombre,onDeleteUsua
         </div>
       </ModalHeader>
       <ModalBody>
-    <h4>Realmente desea eliminar este usuario: {nombre}?</h4>
+        <h4>Realmente desea eliminar este usuario: {nombre}?</h4>
 
       </ModalBody>
       <ModalFooter>

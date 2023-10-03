@@ -18,6 +18,7 @@ library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
 //vis
 function Sedes() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [usuario, setUsuario] = useState([]);
   useEffect(() => {
     obtenerSedes(1); // Fetch the first page of users
   }, []);
@@ -28,15 +29,15 @@ function Sedes() {
   const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
     useModal(false);
   const [dataState, setData] = useState([]);
-  const abrirModalActualizar = (nombre) => {
-    console.log("actualizar",nombre);
-    setNombreS(nombre);
-    console.log("actualiza",NombreSede);
+  const abrirModalActualizar = (cedula) => {
+    console.log(cedula);
+    setUsuario(cedula);
+    console.log(cedula);
     openModalActualizarS();
   };
-  const abrirModalEliminar = (nombre) => {
-    setNombreS(nombre);
-    console.log(nombre);
+  const abrirModalEliminar = (cedula) => {
+    setUsuario(cedula);
+    console.log(cedula);
     openModalEliminar();
   };
   const handleNextPage = () => {
@@ -60,7 +61,7 @@ function Sedes() {
       const userRef = collection(dbPVH, "Sede");
       const userSnapshot = await getDocs(userRef);
       const allUsers = userSnapshot.docs
-        .map((user) => user.data());
+        .map((user) => user.data()).filter((user) => user.estado === 0);
 
       // Calculate the slice of data for the current page
       const slicedUsers = allUsers.slice(startIndex, startIndex + usersPerPage);
@@ -91,7 +92,6 @@ function Sedes() {
             <th>Telefono</th>
             <th>Coreo Electronico</th>
             <th>Direccion</th>
-            <th>Estado</th>
           </tr>
         </thead>
 
@@ -103,7 +103,6 @@ function Sedes() {
               <td>{dato.Telefono}</td>
               <td>{dato.Correo}</td>
               <td>{dato.Direccion}</td>
-              <td>{dato.Estado}</td>
               <td>
                 <Button
                   onClick={() => abrirModalActualizar(dato.Nombre)}
@@ -155,7 +154,8 @@ function Sedes() {
       <ModalEliminarS
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
-        userIdToDelete={NombreSede}
+        userIdToDelete={usuario.idUser}
+        nombre={usuario.nombre}
         onDeleteUsuario={onCreateUsuario}
       />
     </Container>

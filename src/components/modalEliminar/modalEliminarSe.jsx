@@ -44,5 +44,4 @@ function ModalEliminarS({ isOpen, closeModal, userIdToDelete, nombre,onDeleteUsu
     </Modal>
   );
 }
-//asd
 export default ModalEliminarS;
