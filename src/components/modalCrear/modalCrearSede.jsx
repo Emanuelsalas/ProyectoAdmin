@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import dbPVH from "../../firebase/firebase.config";
+import appFirebase from "../../firebase/firebase.config";
+import { getFirestore } from "firebase/firestore";
+import {getAuth } from "firebase/auth";
+import {collection, addDoc } from "firebase/firestore";
 import "../modal/modal.css";
 import {
   Modal,
@@ -9,9 +12,11 @@ import {
   ModalFooter,
   Button,
 } from "reactstrap";
-//Crear
-function ModalCrearS({isOpenS,isCloseS,onCreate}) {
+
+function ModalCrearS({ isOpenA, closeModal, onCreateUsuario }) {
   const [errors, setErrors] = useState({});
+  const db = getFirestore(appFirebase);
+  const auth = getAuth();
   const initialFormState = {
     nombre: '',
     encargado: '',
@@ -22,10 +27,10 @@ function ModalCrearS({isOpenS,isCloseS,onCreate}) {
   }
   const [sedeNueva, setSedeNueva] = useState(initialFormState);
   useEffect(() => {
-    if (!isOpenS) {
+    if (!isOpenA) {
       resetForm();
     }
-  }, [isOpenS]);
+  }, [isOpenA]);
 
   const resetForm = () => {
     setSedeNueva(initialFormState);
@@ -56,37 +61,27 @@ function ModalCrearS({isOpenS,isCloseS,onCreate}) {
 
     setErrors(fieldErrors);
   };
-  const crearSede = async (e) => {
-    e.preventDefault();
-
+  const crearSede = async () => {
     try {
       // Agrega un nuevo documento a la colección "tuColeccion"
-      await dbPVH.collection('Sede').add(sedeNueva);
-
-      // Reinicia los campos del formulario
-      setSedeNueva({
-        nombre: "",
-        correoElectronico: "",
-        encargado: "",
-        foto: "",
-        estado: "",
-        telefono: "",
-        direccionExacta: {
-          provincia: "",
-          canton: "",
-          distrito: "",
-          direccionCompleta: "",
-        }
+      const docRef = await addDoc(collection(db, "Sede"), {
+        Nombre: initialFormState.nombre,
+        Correo: initialFormState.correo,
+        Encargado: initialFormState.encargado,
+        Foto: initialFormState.foto,
+        Estado: 0,
+        Telefono: initialFormState.telefono,
+        Direccion: initialFormState.direcion
       });
-      isCloseS(); // Cierra el modal después de agregar el dato
-      onCreate();
+      closeModal(); // Cierra el modal después de agregar el dato
+      onCreateUsuario();
       console.log('Sede agregada correctamente');
     } catch (error) {
       console.error('Error al agregar Sede:', error);
     }
   };
   return (
-    <Modal isOpen={isOpenS} toggle={isCloseS}>
+    <Modal isOpen={isOpenA} toggle={closeModal}>
       <ModalHeader>
         <div>
           <h3>Crear Sede</h3>
@@ -159,7 +154,7 @@ function ModalCrearS({isOpenS,isCloseS,onCreate}) {
         <Button color="primary" onClick={crearSede}>
           Crear
         </Button>
-        <Button color="danger" onClick={isCloseS}>
+        <Button color="danger" onClick={closeModal}>
           Cancelar
         </Button>
       </ModalFooter>

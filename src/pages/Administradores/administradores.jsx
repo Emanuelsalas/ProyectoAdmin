@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
-import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
-import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
-import { collection, getDocs } from "firebase/firestore";
-import ModalCrear from "../../components/modalCrear/modalcrear";
-import ModalA from "../../components/modal/modal";
-import ModalEliminar from "../../components/modalEliminar/modalElimicar";
 import { useModal } from "../../hooks/useModal";
 import "./administradores.css";
 import "bootstrap/dist/css/bootstrap.min.css";
+import ModalCrear from "../../components/modalCrear/modalcrear";
+import ModalA from "../../components/modal/modal";
+import ModalEliminar from "../../components/modalEliminar/modalElimicar";
+//Firebase
 import { Table, Button, Container } from "reactstrap";
+import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
+import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
+import { collection, getDocs,doc, updateDoc,setDoc, deleteDoc } from "firebase/firestore";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+//fortawesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
@@ -16,46 +19,104 @@ import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
-const atributosDeBusqueda = ['cedula','nombre'];
 
 function Administradores() {
+  const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
+  const auth = getAuth();
+  //hooks
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAttribute, setSelectedAttribute] = useState(atributosDeBusqueda[0]); // Inicialmente selecciona el primer atributo
   const [currentPage, setCurrentPage] = useState(1);
   const [usuario, setUsuario] = useState([]);
-  useEffect(() => {
-    obtenerUsuarios(1); // Fetch the first page of users
-  }, []);
-  const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const [isOpenActualizar, openModalActualizar, closeModalActualizar] =
-    useModal(false);
-  const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
-  const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
-    useModal(false);
-  const [dataState, setData] = useState([]);
+  useModal(false);
+const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
+const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
+  useModal(false);
+const [dataState, setData] = useState([]);
+useEffect(() => {
+  obtenerUsuarios(1); // Fetch the first page of users
+}, []);
+  //------------------------------------------------------Editar--------------------------------------------------------------------
+  const fieldOrderEditar = {
+    1: "nombre", // Primer campo en aparecer
+    2: "telefono",
+    3: "correoElectronico",
+    4: "rol",
+  };
+  const abrirModalActualizar = (cedula) => {
+    setUsuario(cedula);
+    openModalActualizar();
+  };
+  const validateField = (fieldName, value) => {
+    const errors = {}
+    let fieldErrors = { ...errors };
 
-  const filteredUsers = dataState.filter(
-    (user) =>
-      user.nombre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.nombre.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    switch (fieldName) {
+      case "contrasena":
+        fieldErrors.contrasena =
+          value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
+        break;
+      case "telefono":
+        fieldErrors.telefono =
+          value.length !== 8 || isNaN(Number(value))
+            ? "El teléfono debe tener 8 números y ser solo números"
+            : "";
+        break;
+      default:
+        break;
+    }
+
+    return(fieldErrors);
+  };
+  const editar = async (form) => {
+    const cedula = usuario.idUser
+    console.log(cedula)
+    console.log(usuario.correoElectronico)
+    try {
+      const user = doc(db, "Usuarios", cedula);
+      console.log(usuario)
+      console.log('Formulario:', form);
+
+      await updateDoc(user, {
+        nombre: form.nombre,
+        telefono: form.telefono,  
+        correoElectronico: form.correoElectronico,  
+        rol: form.rol
+      });
+      console.log("Document successfully updated!");
+      onCreateUsuario();
+      window.alert("Se creo el Administrador con exito");
+
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  };
+  //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  //------------------------------------------------------Ver--------------------------------------------------------------------
+  const [searchOption, setSearchOption] = useState("nombre");
+  const filteredUsers = dataState.filter((user) => {
+    const searchTerm = searchQuery.toLowerCase();
+    if (searchOption === "nombre") {
+      return user.nombre.toLowerCase().includes(searchTerm);
+    } else if (searchOption === "cedula") {
+      return user.cedula.toLowerCase().includes(searchTerm);
+    }
+    return false;
+  });
+
+
+  const handleSearchOptionChange = (event) => {
+    setSearchOption(event.target.value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
   
   filteredUsers.map((dato) => (
     <tr key={dato.idUser}>
-      {/* Rest of your code */}
     </tr>
   ));
-  const abrirModalActualizar = (cedula) => {
-    console.log(cedula);
-    setUsuario(cedula);
-    console.log(cedula);
-    openModalActualizar();
-  };
-  const abrirModalEliminar = (cedula) => {
-    setUsuario(cedula);
-    console.log(cedula);
-    openModalEliminar();
-  };
   const handleNextPage = () => {
     // Increment the page and fetch the next page of users
     obtenerUsuarios(currentPage + 1);
@@ -88,13 +149,127 @@ function Administradores() {
       console.error("Error al obtener usuarios: ", error);
     }
   };
+  
   const onCreateUsuario = () => {
     // Actualizar la lista de usuarios llamando a obtenerUsuarios nuevamente
     obtenerUsuarios(1);
   };
+  //-------------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------Crear------------------------------------------------------------------------
+  const fieldOrderCrear = {
+    1: "cedula",
+    2: "nombre", // Primer campo en aparecer
+    3: "contrasena",
+    4: "telefono",
+    5: "correoElectronico",
+    6: "rol",
+  };
+const validateFieldCrear = (fieldName, value) => {
+  const errors = {}
+  let fieldErrors = { ...errors };
 
+  switch (fieldName) {
+    case "cedula":
+      fieldErrors.cedula =
+        value.length !== 9 || isNaN(Number(value))
+          ? "La cédula debe tener 9 caracteres y ser solo números"
+          : "";
+      break;
+    case "contrasena":
+      fieldErrors.contrasena =
+        value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
+      break;
+    case "telefono":
+      fieldErrors.telefono =
+        value.length !== 8 || isNaN(Number(value))
+          ? "El teléfono debe tener 8 números y ser solo números"
+          : "";
+      break;
+    default:
+      break;
+  }
+
+  return(fieldErrors);
+};
+const crearUsuario = async (form) => {
+  try {
+    // Crear usuario en Firebase Authentication
+    console.log(form.correo)
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      form.correoElectronico,
+      form.contrasena
+    );
+    // Obtener el ID de usuario del usuario creado
+    const idUser = userCredential.user.uid;
+    console.log(idUser)
+    // Agregar información del usuario a Firestore
+    await setDoc(doc(db, "Usuarios", idUser), {
+
+      idUser: idUser,
+      nombre: form.nombre,
+      correoElectronico: form.correoElectronico,
+      contraseña: form.contrasena,
+      estado: true,
+      morosidad: false,
+      cedula: form.cedula,
+      rol: form.rol,
+      telefono: form.telefono,
+      limiteDeCredito: 0,
+      ultimaConexion: "",
+      direccionExacta: {
+        provincia: "",
+        canton: "",
+        distrito: "",
+        direccionCompleta: "",
+      },
+      historialPedidos: {},
+    });
+
+    console.log("Usuario creado y documentado en Firestore");
+    onCreateUsuario();
+    window.alert("Se creo el Administrador con exito");
+  } catch (error) {
+    console.error("Error al crear usuario y documentar en Firestore: ", error);
+  }
+};
+
+const initialFormState = {
+  cedula: "",
+  nombre: "",
+  contrasena: "",
+  telefono: "",
+  correo: "",
+  rol: "",
+};
+
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//-------------------------------------------------------Eliminar---------------------------------------------------------------------
+
+  const abrirModalEliminar = (cedula) => {
+    setUsuario(cedula);
+    openModalEliminar();
+  };
+  const eliminarUsuario = async () => {
+    try {
+      
+      // Eliminar el usuario de Firebase y Firestore
+      await deleteDoc(doc(db, "Usuarios", usuario.idUser));
+      console.log("Usuario eliminado correctamente");
+      onCreateUsuario();
+      window.alert("Se elimino el Administrador");
+    } catch (error) {
+      console.error("Error al eliminar usuario: ", error);
+    }
+  };
+
+
+  //------------------------------------------------------------------------------------------------------------------------------------
   return (
     <Container>
+      <h1>Administradores
+      </h1>
       <br />
     <Button onClick={openModalCrear} color="success">
       Crear
@@ -102,14 +277,26 @@ function Administradores() {
     <br />
     <br />
     <input
-      type="text"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      placeholder="Search by name"
-    />
+        type="text"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        placeholder={`Buscar por ${searchOption}`}
+      />
+      <select className="select-styled" value={searchOption} onChange={handleSearchOptionChange}>
+        <option value="nombre">Nombre</option>
+        <option value="cedula">Cédula</option>
+      </select>
     <Table>
-      <thead>
-      </thead>
+    <thead>
+          <tr>
+            <th>Cedula</th>
+            <th>Nombre</th>
+            <th>Telefono</th>
+            <th>Coreo Electronico</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
       <tbody>
         {filteredUsers.map((dato) => (
           <tr key={dato.idUser}>
@@ -157,24 +344,25 @@ function Administradores() {
       <ModalA
         isOpenA={isOpenActualizar}
         closeModal={closeModalActualizar}
-        cedula={usuario.idUser}
-        nombre={usuario.nombre}
-        telefono={usuario.telefono}
-        correo={usuario.correoElectronico}
-        rol={usuario.rol}
-        onCreateUsuario={onCreateUsuario}
+        elemento={usuario}
+        validateField ={validateField}
+        FuntionEdit={editar}
+        fieldOrder={fieldOrderEditar}
       />
       <ModalCrear
         isOpenA={isOpenCrear}
         closeModal={closeModalCrear}
         onCreateUsuario={onCreateUsuario}
+        validateField={validateFieldCrear}
+        FuntionCreate={crearUsuario}
+        initialForm={initialFormState}
+        fieldOrder={fieldOrderCrear}
       />
       <ModalEliminar
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
-        userIdToDelete={usuario.idUser}
         nombre={usuario.nombre}
-        onDeleteUsuario={onCreateUsuario}
+        funtionDelete={eliminarUsuario}
       />
     </Container>
   );

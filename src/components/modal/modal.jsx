@@ -7,40 +7,24 @@ import {
   Button,
 } from "reactstrap";
 import React, { useEffect, useState } from "react";
-import { doc, updateDoc } from "firebase/firestore";
-import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
-import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
 import "./modal.css";
 
-function ModalA({ isOpenA, closeModal, cedula,nombre,telefono,correo,rol,onCreateUsuario }) {
+function ModalA({ isOpenA, closeModal, elemento, validateField, FuntionEdit,fieldOrder }) {
+  const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
-  const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
-  const initialFormState = {
-    nombre: nombre,
-    telefono: telefono,
-    correo: correo, 
-    rol: rol,
-  };
-  const [form, setForm] = useState(initialFormState);
-  
 
   useEffect(() => {
     // Reset the form whenever isOpenA changes (modal is opened/closed)
-    if (!isOpenA) {
-      resetForm();
-    } else {
+    if (isOpenA) {
       // If modal is opened, populate the form with user data
-      setForm({
-        nombre: nombre,
-        telefono: telefono,
-        correo: correo,
-        rol: rol,
-      });
+      setForm(elemento);
     }
-  }, [isOpenA, nombre, telefono, correo, rol]);
+  }, [isOpenA, elemento]);
+
   const resetForm = () => {
-    setForm(initialFormState);
+    setForm({});
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({
@@ -49,61 +33,58 @@ function ModalA({ isOpenA, closeModal, cedula,nombre,telefono,correo,rol,onCreat
     });
 
     // Realizar validaciones en tiempo real
-    validateField(name, value);
-  };
-
-  const validateField = (fieldName, value) => {
-    let fieldErrors = { ...errors };
-
-    switch (fieldName) {
-      case "contrasena":
-        fieldErrors.contrasena =
-          value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
-        break;
-      case "telefono":
-        fieldErrors.telefono =
-          value.length !== 8 || isNaN(Number(value))
-            ? "El teléfono debe tener 8 números y ser solo números"
-            : "";
-        break;
-      case "rol":
-        fieldErrors.rol =
-          value !== "Admin" && value !== "Super Admin"
-            ? "El rol debe ser 'Admin' o 'Super Admin'"
-            : "";
-        break;
-      default:
-        break;
-    }
-
-    setErrors(fieldErrors);
+    setErrors(validateField(name, value));
   };
 
   const cerrarModalActualizar = () => {
+    resetForm();
     closeModal();
   };
 
   const editar = async () => {
-    console.log(cedula)
-    try {
-      const usuario = doc(db, "Usuarios", cedula);
-      console.log(usuario)
-      console.log('Formulario:', form);
+    FuntionEdit(form);
+    resetForm();
+    closeModal();
+  };
 
-      await updateDoc(usuario, {
-        nombre: form.nombre,
-        telefono: form.telefono,  // Corrected: Should be 'telefono'
-        correoElectronico: form.correo,  // Corrected: Should be 'correoElectronico'
-        rol: form.rol
-      });
-      console.log("Document successfully updated!");
-      onCreateUsuario();
-      closeModal();
-      window.alert("Se creo el Administrador con exito");
-
-    } catch (error) {
-      console.error("Error updating document: ", error);
-    }
+  const generateFormGroups = () => {
+    return Object.entries(fieldOrder).map(([order, key]) => {
+      if (key === "rol") {
+        // Si es el atributo "rol", generar un combobox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <select
+              className="form-control"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un rol</option>
+              <option value="Admin">Admin</option>
+              <option value="Super Admin">Super Admin</option>
+            </select>
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      } else {
+        // Generar un input para los otros atributos
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <input
+              required
+              className="form-control"
+              type="text"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            />
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }
+    });
   };
 
   return (
@@ -114,55 +95,7 @@ function ModalA({ isOpenA, closeModal, cedula,nombre,telefono,correo,rol,onCreat
         </div>
       </ModalHeader>
 
-      <ModalBody>
-      <FormGroup>
-          <label>Nombre:</label>
-          <input
-          required 
-            className="form-control"
-            type="text"
-            name="nombre"
-            value={form.nombre}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup className={errors.contrasena ? "error" : ""}>
-          <label>Teléfono:</label>
-          <input
-          required 
-            className="form-control"
-            name="telefono"
-            type="tel"
-            onChange={handleChange}
-            value={form.telefono}
-          />
-          {errors.telefono && <div className="error">{errors.telefono}</div>}
-        </FormGroup>
-        <FormGroup className={errors.correo ? "error" : ""}>
-          <label>Correo:</label>
-          <input
-          required 
-            className="form-control"
-            name="correo"
-            type="email"
-            onChange={handleChange}
-            value={form.correo}
-          />
-          {errors.correo && <div className="error">{errors.correo}</div>}
-        </FormGroup>
-        <FormGroup className={errors.rol ? "error" : ""}>
-          <label>Rol:</label>
-          <input
-          required 
-            className="form-control"
-            name="rol"
-            type="text"
-            onChange={handleChange}
-            value={form.rol}
-          />
-          {errors.rol && <div className="error">{errors.rol}</div>}
-        </FormGroup>
-      </ModalBody>
+      <ModalBody>{generateFormGroups()}</ModalBody>
 
       <ModalFooter>
         <Button color="primary" onClick={() => editar()}>

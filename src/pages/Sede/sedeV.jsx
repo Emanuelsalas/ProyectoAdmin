@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import dbPVH from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
+import appFirebase from "../../firebase/firebase.config";
+import { getFirestore } from "firebase/firestore"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
 import { collection, getDocs } from "firebase/firestore";
 import { useModal } from "../../hooks/useModal";
 import ModiSede from "../../components/modal/modificarSede";
 import ModalCrearS from "../../components/modalCrear/modalCrearSede";
 import ModalEliminarS from "../../components/modalEliminar/modalEliminarSe";
-import "../Sede/sedeE.css"
+import "../Sede/sedeE.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Table, Button, Container } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,6 +20,7 @@ library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
 function Sedes() {
   const [currentPage, setCurrentPage] = useState(1);
   const [usuario, setUsuario] = useState([]);
+  const db = getFirestore(appFirebase);
   useEffect(() => {
     obtenerSedes(1); // Fetch the first page of users
   }, []);
@@ -57,11 +59,10 @@ function Sedes() {
     try {
       const usersPerPage = 10; // Number of data to fetch per page
       const startIndex = (page - 1) * usersPerPage;
-
-      const userRef = collection(dbPVH, "Sede");
+      const userRef = collection(db,"Sede");
       const userSnapshot = await getDocs(userRef);
       const allUsers = userSnapshot.docs
-        .map((user) => user.data()).filter((user) => user.estado === 0);
+        .map((user) => user.data()).filter((user) => user.Estado === 0);
 
       // Calculate the slice of data for the current page
       const slicedUsers = allUsers.slice(startIndex, startIndex + usersPerPage);
@@ -97,7 +98,7 @@ function Sedes() {
 
         <tbody>
           {dataState.map((dato) => (
-            <tr key={dato.idUser}>
+            <tr key={dato.ID}>
               <td>{dato.Nombre}</td>
               <td>{dato.Encargado}</td>
               <td>{dato.Telefono}</td>

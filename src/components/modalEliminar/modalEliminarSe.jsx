@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
 import { doc, deleteDoc } from "firebase/firestore";
-import dbPVH from "../../firebase/firebase.config";
+import appFirebase from "../../firebase/firebase.config";
+import { getFirestore } from "firebase/firestore";
 import { Modal, ModalHeader, ModalFooter, Button,ModalBody } from "reactstrap";
 import "../modal/modal.css";
-
 function ModalEliminarS({ isOpen, closeModal, userIdToDelete, nombre,onDeleteUsuario }) {
-
+  const db = getFirestore(appFirebase);
   const cerrarModalEliminar = () => {
     closeModal();
   };
@@ -13,7 +12,7 @@ function ModalEliminarS({ isOpen, closeModal, userIdToDelete, nombre,onDeleteUsu
   const eliminarUsuario = async () => {
     try {
       // Eliminar la sede de Firebase y Firestore
-      await deleteDoc(doc(dbPVH, "Sede", userIdToDelete));
+      await deleteDoc(doc(db, "Sede", userIdToDelete));
       console.log("Sede eliminada correctamente");
       onDeleteUsuario();
       closeModal();

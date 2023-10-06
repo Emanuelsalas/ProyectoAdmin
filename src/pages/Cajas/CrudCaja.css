@@ -1,0 +1,50 @@
+/* Estilos para la tabla */
+.Table {
+    margin-top: 20px;
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #f2f2f2;
+    background-color: transparent
+  }
+  .custom-table {
+    background-color: transparent !important; /* Remove the background color */
+  }
+
+  #blanco{
+    background-color: #f2f2f2;
+  }
+  
+  /* Estilos para el botón "Crear" en la esquina superior izquierda */
+  .create-button {
+    position: absolute;
+    top: 10px; /* Ajusta la distancia desde la parte superior */
+    left: 10px; /* Ajusta la distancia desde la izquierda */
+  }
+  
+  .Table th,
+  .Table td {
+    padding: 10px;
+    border: 1px solid #f7f5f5;
+    text-align: left;
+  }
+  
+  .Table th {
+    background-color: #282c34;
+    color: white;
+  }
+  
+  .Table tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+  }
+  
+  /* Estilos para los botones y formularios */
+  .Button {
+    margin: 10px;
+  }
+  
+  .FormGroup {
+    margin-bottom: 15px;
+  }
+  
+
+  

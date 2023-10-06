@@ -10,3 +10,6 @@
     height: auto;
     margin-right: 40px;
 }
+.activeNavLink {
+    border-bottom: 2px solid blue; /* Cambia el color y estilo según tus preferencias */
+  }

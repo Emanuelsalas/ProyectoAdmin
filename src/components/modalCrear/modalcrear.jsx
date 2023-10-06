@@ -1,8 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { doc, setDoc } from "firebase/firestore";
-import appFirebase from "../../firebase/firebase.config";
-import { getFirestore } from "firebase/firestore";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import "../modal/modal.css";
 import {
   Modal,
@@ -13,19 +9,17 @@ import {
   Button,
 } from "reactstrap";
 
-function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
+function ModalCrear({
+  isOpenA,
+  closeModal,
+  validateField,
+  FuntionCreate,
+  initialForm,
+  fieldOrder
+}) {
   const [errors, setErrors] = useState({});
-  const db = getFirestore(appFirebase);
-  const auth = getAuth();
-  const initialFormState = {
-    cedula: "",
-    nombre: "",
-    contrasena: "",
-    telefono: "",
-    correo: "",
-    rol: "",
-  };
-  const [form, setForm] = useState(initialFormState);
+
+  const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
     if (!isOpenA) {
@@ -34,7 +28,7 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
   }, [isOpenA]);
 
   const resetForm = () => {
-    setForm(initialFormState);
+    setForm(initialForm);
   };
 
   const handleChange = (e) => {
@@ -45,40 +39,7 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
     });
 
     // Realizar validaciones en tiempo real
-    validateField(name, value);
-  };
-
-  const validateField = (fieldName, value) => {
-    let fieldErrors = { ...errors };
-
-    switch (fieldName) {
-      case "cedula":
-        fieldErrors.cedula =
-          value.length !== 9 || isNaN(Number(value))
-            ? "La cédula debe tener 9 caracteres y ser solo números"
-            : "";
-        break;
-      case "contrasena":
-        fieldErrors.contrasena =
-          value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
-        break;
-      case "telefono":
-        fieldErrors.telefono =
-          value.length !== 8 || isNaN(Number(value))
-            ? "El teléfono debe tener 8 números y ser solo números"
-            : "";
-        break;
-      case "rol":
-        fieldErrors.rol =
-          value !== "Admin" && value !== "Super Admin"
-            ? "El rol debe ser 'Admin' o 'Super Admin'"
-            : "";
-        break;
-      default:
-        break;
-    }
-
-    setErrors(fieldErrors);
+    setErrors(validateField(name, value));
   };
 
   const cerrarModalCrear = () => {
@@ -86,50 +47,51 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
   };
 
   const crearUsuario = async () => {
-    try {
-      // Crear usuario en Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        form.correo,
-        form.contrasena
-      );
-      // Obtener el ID de usuario del usuario creado
-      const idUser = userCredential.user.uid;
-      console.log(idUser)
-      // Agregar información del usuario a Firestore
-      await setDoc(doc(db, "Usuarios", idUser), {
-
-        idUser: idUser,
-        nombre: form.nombre,
-        correoElectronico: form.correo,
-        contraseña: form.contrasena,
-        estado: true,
-        morosidad: false,
-        cedula: form.cedula,
-        rol: form.rol,
-        telefono: form.telefono,
-        limiteDeCredito: 0,
-        ultimaConexion: "",
-        direccionExacta: {
-          provincia: "",
-          canton: "",
-          distrito: "",
-          direccionCompleta: "",
-        },
-        historialPedidos: {},
-      });
-  
-      console.log("Usuario creado y documentado en Firestore");
-      onCreateUsuario();
-      closeModal();
-      window.alert("Se creo el Administrador con exito");
-    } catch (error) {
-      console.error("Error al crear usuario y documentar en Firestore: ", error);
-    }
+    FuntionCreate(form);
+    closeModal();
+  };
+  const generateFormGroups = () => {
+    return Object.entries(fieldOrder).map(([order, key]) => {
+      if (key === "rol") {
+        // Si es el atributo "rol", generar un combobox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <select
+              className="form-control"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un rol</option>
+              <option value="Admin">Admin</option>
+              <option value="Super Admin">Super Admin</option>
+            </select>
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      } else {
+        // Generar un input para los otros atributos
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <input
+              required
+              className="form-control"
+              type="text"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            />
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }
+    });
   };
 
   return (
-    <Modal isOpen={isOpenA} toggle={cerrarModalCrear}>
+    <Modal isOpen={isOpenA} toggle={cerrarModalCrear} backdrop="static">
       <ModalHeader>
         <div>
           <h3>Crear administrador</h3>
@@ -137,79 +99,7 @@ function ModalCrear({ isOpenA, closeModal, onCreateUsuario }) {
       </ModalHeader>
 
       <ModalBody>
-      <FormGroup className={errors.cedula ? "error" : ""  }>
-          <label>Cedula:</label>
-          <input
-            required
-            className="form-control"
-            type="text"
-            name="cedula"
-            placeholder="101110111"
-            value={form.cedula}
-            onChange={handleChange}
-          />
-          {errors.cedula && <div className="error">{errors.cedula}</div>}
-        </FormGroup>
-        <FormGroup>
-          <label>Nombre:</label>
-          <input
-          required 
-            className="form-control"
-            type="text"
-            name="nombre"
-            value={form.nombre}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup className={errors.contrasena ? "error" : ""}>
-          <label>Contraseña:</label>
-          <input
-          required 
-            className="form-control"
-            type="password"
-            name="contrasena"
-            placeholder="debe tener al menos 6 caracteres"
-            value={form.contrasena}
-            onChange={handleChange}
-          />
-          {errors.contrasena && <div className="error">{errors.contrasena}</div>}
-        </FormGroup>
-        <FormGroup className={errors.contrasena ? "error" : ""}>
-          <label>Teléfono:</label>
-          <input
-          required 
-            className="form-control"
-            name="telefono"
-            type="tel"
-            onChange={handleChange}
-            value={form.telefono}
-          />
-          {errors.telefono && <div className="error">{errors.telefono}</div>}
-        </FormGroup>
-        <FormGroup className={errors.correo ? "error" : ""}>
-          <label>Correo:</label>
-          <input
-          required 
-            className="form-control"
-            name="correo"
-            type="email"
-            onChange={handleChange}
-            value={form.correo}
-          />
-          {errors.correo && <div className="error">{errors.correo}</div>}
-        </FormGroup>
-        <FormGroup className={errors.rol ? "error" : ""}>
-          <label>Rol:</label>
-          <input
-          required 
-            className="form-control"
-            name="rol"
-            type="text"
-            onChange={handleChange}
-            value={form.rol}
-          />
-          {errors.rol && <div className="error">{errors.rol}</div>}
-        </FormGroup>
+      {generateFormGroups()}
       </ModalBody>
 
       <ModalFooter>
