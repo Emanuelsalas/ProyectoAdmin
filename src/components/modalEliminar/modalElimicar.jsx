@@ -3,7 +3,7 @@ import appFirebase from "../../firebase/firebase.config";
 import { getFirestore } from "firebase/firestore";
 import { Modal, ModalHeader, ModalFooter, Button,ModalBody } from "reactstrap";
 import "../modal/modal.css";
-function ModalEliminar({ isOpen, closeModal, nombre,funtionDelete }) {
+function ModalEliminar({ isOpen, closeModal, nombre,funtionDelete,nombreCrud }) {
   
   const db = getFirestore(appFirebase);
 
@@ -18,7 +18,7 @@ function ModalEliminar({ isOpen, closeModal, nombre,funtionDelete }) {
     <Modal isOpen={isOpen} toggle={cerrarModalEliminar} backdrop="static">
       <ModalHeader>
         <div>
-          <h3>Eliminar usuario</h3>
+          <h3>Eliminar {nombreCrud}</h3>
         </div>
       </ModalHeader>
       <ModalBody>

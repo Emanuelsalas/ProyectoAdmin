@@ -4,3 +4,15 @@ input:invalid {
   .error input {
     box-shadow: 0 0 5px 1px red;
   }
+.modalTodo´{
+  width: 100px;
+}
+  .modal-content {
+    width: 1oopx;
+  }
+  
+  /* Centra los elementos dentro del modal */
+  .modal-body {
+    align-items: center;
+    width: 1oopx;
+  }

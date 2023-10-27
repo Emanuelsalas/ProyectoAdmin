@@ -22,7 +22,7 @@ function ModalCrearS({ isOpenA, closeModal, onCreateUsuario }) {
     encargado: '',
     telefono: '',
     correo: '',
-    direcion: '',
+    direccion: '',
     foto: '',
   }
   const [sedeNueva, setSedeNueva] = useState(initialFormState);
@@ -65,13 +65,13 @@ function ModalCrearS({ isOpenA, closeModal, onCreateUsuario }) {
     try {
       // Agrega un nuevo documento a la colección "tuColeccion"
       const docRef = await addDoc(collection(db, "Sede"), {
-        Nombre: initialFormState.nombre,
-        Correo: initialFormState.correo,
-        Encargado: initialFormState.encargado,
-        Foto: initialFormState.foto,
+        Nombre: sedeNueva.nombre,
+        Correo: sedeNueva.correo,
+        Encargado: sedeNueva.encargado,
+        Foto: sedeNueva.foto,
         Estado: 0,
-        Telefono: initialFormState.telefono,
-        Direccion: initialFormState.direcion
+        Telefono: sedeNueva.telefono,
+        Direccion: sedeNueva.direccion
       });
       closeModal(); // Cierra el modal después de agregar el dato
       onCreateUsuario();
@@ -147,6 +147,17 @@ function ModalCrearS({ isOpenA, closeModal, onCreateUsuario }) {
             value={sedeNueva.foto}
           />
           {errors.foto && <div className="error">{errors.foto}</div>}
+        </FormGroup>
+        <FormGroup>
+          <label>Encargado:</label>
+          <input
+          required 
+            className="form-control"
+            type="text"
+            name="direccion"
+            value={sedeNueva.direccion}
+            onChange={handleChange}
+          />
         </FormGroup>
       </ModalBody>
 

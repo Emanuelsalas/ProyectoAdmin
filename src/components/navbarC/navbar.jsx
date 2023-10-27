@@ -20,14 +20,16 @@ function TopNavBar() {
       expand="lg"
       className="bg-body-tertiary"
     >
-            <Container id="prueba">
+      <Container id="prueba">
         <img id="logo" src={HomasLogo} />
         <Navbar.Brand id="home" href="/">
           HOMAS outlet
         </Navbar.Brand>
         <Nav className="me-auto" variant="tabs" defaultActiveKey="/home">
           <Nav.Link
-            className={`navo ${location.pathname === "/Administradores" ? "active" : ""}`}
+            className={`navo ${
+              location.pathname === "/Administradores" ? "active" : ""
+            }`}
             as={Link}
             to="/Administradores"
           >
@@ -47,14 +49,27 @@ function TopNavBar() {
           >
             Sedes
           </Nav.Link>
+
+          <Nav.Link
+            className={`navo ${
+              location.pathname === "/Clientes" ? "active" : ""
+            }`}
+            as={Link}
+            to="/Clientes"
+          >
+            Clientes
+          </Nav.Link>
+          <Nav.Link
+            className={`navo ${location.pathname === "/login" ? "active" : ""}`}
+            as={Link}
+            to="/login"
+          >
+            <FontAwesomeIcon
+              icon="fa-solid fa-right-to-bracket"
+              id="iconoLogin"
+            />
+          </Nav.Link>
         </Nav>
-        <Nav.Link
-          className={`navo ${location.pathname === "/login" ? "active" : ""}`}
-          as={Link}
-          to="/login"
-        >
-          <FontAwesomeIcon icon="fa-solid fa-right-to-bracket" id="iconoLogin" />
-        </Nav.Link>
       </Container>
     </Navbar>
   );

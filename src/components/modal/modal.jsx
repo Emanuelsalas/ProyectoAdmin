@@ -9,7 +9,17 @@ import {
 import React, { useEffect, useState } from "react";
 import "./modal.css";
 
-function ModalA({ isOpenA, closeModal, elemento, validateField, FuntionEdit,fieldOrder }) {
+function ModalA({
+  isOpenA,
+  closeModal,
+  elemento,
+  validateField,
+  FuntionEdit,
+  fieldOrder,
+  nombreCrud,
+  Etiquetas,
+  additionalParam = "default value"
+}) {
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
 
@@ -26,14 +36,15 @@ function ModalA({ isOpenA, closeModal, elemento, validateField, FuntionEdit,fiel
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, type, checked, value } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
     setForm({
       ...form,
-      [name]: value,
+      [name]: newValue,
     });
-
+  
     // Realizar validaciones en tiempo real
-    setErrors(validateField(name, value));
+    setErrors(validateField(name, newValue));
   };
 
   const cerrarModalActualizar = () => {
@@ -49,11 +60,13 @@ function ModalA({ isOpenA, closeModal, elemento, validateField, FuntionEdit,fiel
 
   const generateFormGroups = () => {
     return Object.entries(fieldOrder).map(([order, key]) => {
+
+        const label = Etiquetas[key] || (key.charAt(0).toUpperCase() + key.slice(1));
       if (key === "rol") {
         // Si es el atributo "rol", generar un combobox
         return (
           <FormGroup key={key} className={errors[key] ? "error" : ""}>
-            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <label>{label}:</label>
             <select
               className="form-control"
               name={key}
@@ -67,11 +80,25 @@ function ModalA({ isOpenA, closeModal, elemento, validateField, FuntionEdit,fiel
             {errors[key] && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
+      } else if (key === "morosidad") {
+        // Si es el atributo "morosidad", generar un checkbox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{label}:</label>
+            <input
+              type="checkbox"
+              name={key}
+              checked={form[key] || false}
+              onChange={handleChange}
+            />
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
       } else {
         // Generar un input para los otros atributos
         return (
           <FormGroup key={key} className={errors[key] ? "error" : ""}>
-            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+            <label>{label}:</label>
             <input
               required
               className="form-control"
@@ -88,10 +115,10 @@ function ModalA({ isOpenA, closeModal, elemento, validateField, FuntionEdit,fiel
   };
 
   return (
-    <Modal isOpen={isOpenA} toggle={cerrarModalActualizar} backdrop="static">
+    <Modal className="modalTodo" isOpen={isOpenA} toggle={cerrarModalActualizar} backdrop="static">
       <ModalHeader>
         <div>
-          <h3>Editar administrador</h3>
+          <h3>Editar {nombreCrud}</h3>
         </div>
       </ModalHeader>
 

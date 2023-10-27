@@ -15,11 +15,14 @@ function ModalCrear({
   validateField,
   FuntionCreate,
   initialForm,
-  fieldOrder
+  fieldOrder,
+  Combobox,
+  nombreCrud,
+  Etiquetas
 }) {
   const [errors, setErrors] = useState({});
-
   const [form, setForm] = useState(initialForm);
+  const [isFormEdited, setIsFormEdited] = useState(false);
 
   useEffect(() => {
     if (!isOpenA) {
@@ -29,34 +32,42 @@ function ModalCrear({
 
   const resetForm = () => {
     setForm(initialForm);
+    setIsFormEdited(false);
+    setErrors({});
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({
       ...form,
       [name]: value,
     });
-
-    // Realizar validaciones en tiempo real
-    setErrors(validateField(name, value));
+    setIsFormEdited(true); // Indica que el formulario ha sido editado
+  
+    // Realizar validaciones
+    const fieldErrors = validateField(name, value);
+    setErrors(fieldErrors);
   };
+
 
   const cerrarModalCrear = () => {
     closeModal();
   };
 
-  const crearUsuario = async () => {
+  const crear = async () => {
     FuntionCreate(form);
     closeModal();
   };
+
   const generateFormGroups = () => {
     return Object.entries(fieldOrder).map(([order, key]) => {
+
+      const hasError = errors[key] && (isFormEdited || form[key]);
+      const label = Etiquetas[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+ 
       if (key === "rol") {
-        // Si es el atributo "rol", generar un combobox
         return (
-          <FormGroup key={key} className={errors[key] ? "error" : ""}>
-            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+          <FormGroup key={key} className={hasError ? "error" : ""}>
+            <label>{label}:</label>
             <select
               className="form-control"
               name={key}
@@ -64,17 +75,19 @@ function ModalCrear({
               onChange={handleChange}
             >
               <option value="">Seleccione un rol</option>
-              <option value="Admin">Admin</option>
-              <option value="Super Admin">Super Admin</option>
+              {Object.entries(Combobox).map(([roleKey, roleName]) => (
+                <option key={roleKey} value={roleKey}>
+                  {roleName}
+                </option>
+              ))}
             </select>
-            {errors[key] && <div className="error">{errors[key]}</div>}
+            {hasError && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
       } else {
-        // Generar un input para los otros atributos
         return (
-          <FormGroup key={key} className={errors[key] ? "error" : ""}>
-            <label>{key.charAt(0).toUpperCase() + key.slice(1)}:</label>
+          <FormGroup key={key} className={hasError ? "error" : ""}>
+            <label>{label}:</label>
             <input
               required
               className="form-control"
@@ -83,27 +96,26 @@ function ModalCrear({
               value={form[key] || ""}
               onChange={handleChange}
             />
-            {errors[key] && <div className="error">{errors[key]}</div>}
+            {isFormEdited && errors[key] && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
       }
     });
   };
+  
 
   return (
     <Modal isOpen={isOpenA} toggle={cerrarModalCrear} backdrop="static">
       <ModalHeader>
         <div>
-          <h3>Crear administrador</h3>
+          <h3>Crear {nombreCrud}</h3>
         </div>
       </ModalHeader>
 
-      <ModalBody>
-      {generateFormGroups()}
-      </ModalBody>
+      <ModalBody>{generateFormGroups()}</ModalBody>
 
       <ModalFooter>
-        <Button color="primary" onClick={crearUsuario}>
+        <Button color="primary" onClick={crear}>
           Crear
         </Button>
         <Button color="danger" onClick={cerrarModalCrear}>
