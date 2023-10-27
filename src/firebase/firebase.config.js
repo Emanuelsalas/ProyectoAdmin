@@ -23,13 +23,12 @@ const configPVH = {
 // Initialize Firebase
 const appPVH = initializeApp(configPVH);
 const analyticsPVH = getAnalytics(appPVH);
-/** 
- * 
-*/
+const dbPVH = getFirestore(appPVH);
+
 export async function guardarFoto(archivo){
   const dato = Storage(`/ImagenesSede/${v4()}`);
   const snapshot = await dato.put(archivo);
   const imagenURL = await snapshot.ref.getDownloadURL();
   return imagenURL;
 }
-export default appPVH;
+export default dbPVH;
