@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import ModalCrear from "../../components/modalCrear/modalcrear";
 import ModalA from "../../components/modal/modal";
 import ModalEliminar from "../../components/modalEliminar/modalElimicar";
+import CustomAlert from "../../components/alert/alert";
 //Firebase
 import { Table, Button, Container } from "reactstrap";
 import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
@@ -19,14 +20,22 @@ import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 library.add(faPenToSquare, faSquareXmark,faArrowRight,faArrowLeft);
-
+const nombre = "Usuario"
 function Administradores() {
+  const combobox = {
+    Admin: "Admin",
+    SuperAdmin: "SuperAdmin"
+  }
   const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
   const auth = getAuth();
   //hooks
+ 
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [usuario, setUsuario] = useState([]);
+  const [showAlert, setShowAlert] = useState(false); 
+  const [textoAlert, setTextoAlert] = useState("");
+  const [tipoAlert, setTipoAlert] = useState("");
   const [isOpenActualizar, openModalActualizar, closeModalActualizar] =
   useModal(false);
 const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
@@ -43,7 +52,15 @@ useEffect(() => {
     3: "correoElectronico",
     4: "rol",
   };
+  const EtiquetasEditar = {
+    correoElectronico: "Correo Electrónico",
+    telefono: " Teléfono"
+
+    // Agrega otras claves y sus etiquetas aquí
+  };
   const abrirModalActualizar = (cedula) => {
+    setTextoAlert("Usuario modificado con éxito")
+    setTipoAlert("success")
     setUsuario(cedula);
     openModalActualizar();
   };
@@ -70,23 +87,19 @@ useEffect(() => {
   };
   const editar = async (form) => {
     const cedula = usuario.idUser
-    console.log(cedula)
-    console.log(usuario.correoElectronico)
     try {
       const user = doc(db, "Usuarios", cedula);
-      console.log(usuario)
-      console.log('Formulario:', form);
-
       await updateDoc(user, {
         nombre: form.nombre,
         telefono: form.telefono,  
         correoElectronico: form.correoElectronico,  
         rol: form.rol
       });
-      console.log("Document successfully updated!");
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 4000);
       onCreateUsuario();
-      window.alert("Se creo el Administrador con exito");
-
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -139,7 +152,7 @@ useEffect(() => {
       const userSnapshot = await getDocs(userRef);
       const allUsers = userSnapshot.docs
         .map((user) => user.data())
-        .filter((user) => user.rol === "Admin" || user.rol === "Super Admin");
+        .filter((user) => user.rol === "Admin" || user.rol === "SuperAdmin");
 
       // Calculate the slice of users for the current page
       const slicedUsers = allUsers.slice(startIndex, startIndex + usersPerPage);
@@ -158,11 +171,24 @@ useEffect(() => {
 //-------------------------------------------------------------Crear------------------------------------------------------------------------
   const fieldOrderCrear = {
     1: "cedula",
-    2: "nombre", // Primer campo en aparecer
+    2: "nombre", 
     3: "contrasena",
     4: "telefono",
     5: "correoElectronico",
-    6: "rol",
+    6: "rol"
+  };
+  const etiquetasCrear = {
+    correoElectronico: "Correo Electrónico",
+    cedula: "Cédula",
+    contrasena: "Contraseña",
+    telefono: " Teléfono"
+
+    // Agrega otras claves y sus etiquetas aquí
+  };
+  const abrirModalCrear = () => {
+    setTextoAlert("Usuario creado con éxito")
+    setTipoAlert("success")
+    openModalCrear();
   };
 const validateFieldCrear = (fieldName, value) => {
   const errors = {}
@@ -194,7 +220,7 @@ const validateFieldCrear = (fieldName, value) => {
 const crearUsuario = async (form) => {
   try {
     // Crear usuario en Firebase Authentication
-    console.log(form.correo)
+    console.log(form.correoElectronico);
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       form.correoElectronico,
@@ -202,10 +228,10 @@ const crearUsuario = async (form) => {
     );
     // Obtener el ID de usuario del usuario creado
     const idUser = userCredential.user.uid;
-    console.log(idUser)
+    console.log("Usuario creado con éxito", idUser);
+    console.log(idUser);
     // Agregar información del usuario a Firestore
     await setDoc(doc(db, "Usuarios", idUser), {
-
       idUser: idUser,
       nombre: form.nombre,
       correoElectronico: form.correoElectronico,
@@ -225,12 +251,17 @@ const crearUsuario = async (form) => {
       },
       historialPedidos: {},
     });
-
+    setShowAlert(true);
+    setTimeout(() => {
+      setShowAlert(false);
+    }, 4000);
     console.log("Usuario creado y documentado en Firestore");
     onCreateUsuario();
-    window.alert("Se creo el Administrador con exito");
   } catch (error) {
-    console.error("Error al crear usuario y documentar en Firestore: ", error);
+    console.error(
+      "Error al crear usuario y documentar en Firestore: ",
+      error
+    );
   }
 };
 
@@ -239,7 +270,7 @@ const initialFormState = {
   nombre: "",
   contrasena: "",
   telefono: "",
-  correo: "",
+  correoElectronico: "",
   rol: "",
 };
 
@@ -248,6 +279,8 @@ const initialFormState = {
 //-------------------------------------------------------Eliminar---------------------------------------------------------------------
 
   const abrirModalEliminar = (cedula) => {
+    setTipoAlert("danger")
+    setTextoAlert("Usuario eliminado con éxito")
     setUsuario(cedula);
     openModalEliminar();
   };
@@ -258,7 +291,10 @@ const initialFormState = {
       await deleteDoc(doc(db, "Usuarios", usuario.idUser));
       console.log("Usuario eliminado correctamente");
       onCreateUsuario();
-      window.alert("Se elimino el Administrador");
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 4000);
     } catch (error) {
       console.error("Error al eliminar usuario: ", error);
     }
@@ -268,10 +304,11 @@ const initialFormState = {
   //------------------------------------------------------------------------------------------------------------------------------------
   return (
     <Container>
+
       <h1>Administradores
       </h1>
       <br />
-    <Button onClick={openModalCrear} color="success">
+    <Button onClick={abrirModalCrear} color="success">
       Crear
     </Button>
     <br />
@@ -348,6 +385,8 @@ const initialFormState = {
         validateField ={validateField}
         FuntionEdit={editar}
         fieldOrder={fieldOrderEditar}
+        nombreCrud={nombre}
+        Etiquetas={EtiquetasEditar}
       />
       <ModalCrear
         isOpenA={isOpenCrear}
@@ -357,13 +396,18 @@ const initialFormState = {
         FuntionCreate={crearUsuario}
         initialForm={initialFormState}
         fieldOrder={fieldOrderCrear}
+        Combobox={combobox}
+        nombreCrud={nombre}
+        Etiquetas={etiquetasCrear}
       />
       <ModalEliminar
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
         nombre={usuario.nombre}
         funtionDelete={eliminarUsuario}
+        nombreCrud={nombre}
       />
+          {showAlert && <CustomAlert isOpen={true} texto={textoAlert} tipo={tipoAlert} />}
     </Container>
   );
 }

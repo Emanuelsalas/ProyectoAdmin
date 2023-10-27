@@ -1,387 +1,308 @@
-import React, { Component } from "react";
-import "./CrudCaja.css";
+import React, { useEffect, useState } from "react";
+import { useModal } from "../../hooks/useModal";
 import "bootstrap/dist/css/bootstrap.min.css";
-import {
-  Table,
-  Button,
-  Container,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  FormGroup,
-  ModalFooter,
-} from "reactstrap";
+import { Table, Button, Container } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
+import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import appFirebase from "../../firebase/firebase.config";
 import {
   getFirestore,
   collection,
   getDocs,
-  addDoc,
-  deleteDoc,
   doc,
   updateDoc,
+  setDoc,
+  deleteDoc,
 } from "firebase/firestore";
-import appFirebase from "../../firebase/firebase.config";
+import "./CrudCaja.css";
+import ModalA from "../../components/modal/modal";
+import ModalEliminar from "../../components/modalEliminar/modalElimicar";
+import ModalCrear from "../../components/modalCrear/modalcrear";
 
-class CrudCaja extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      data: [],
-      modalActualizar: false,
-      modalInsertar: false,
-      form: {
-        nombre: "",
-        sedeDireccion: "",
-        sedeTelefono: "",
-        sedeNombre: "",
-      },
-    };
-  }
+library.add(faPenToSquare, faSquareXmark, faArrowRight, faArrowLeft);
 
-  componentDidMount() {
-    this.getCajaData();
-  }
+function Cajas() {
+  const db = getFirestore(appFirebase);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [caja, setCaja] = useState([]);
+  const [isOpenEditar, openModalEditar, closeModalEditar] = useModal(false);
+  const [isOpenCrear, openModalCrear, closeModalCrear] = useModal(false);
+  const [isOpenEliminar, openModalEliminar, closeModalEliminar] =
+    useModal(false);
+  const [dataState, setData] = useState([]);
 
-  async getCajaData() {
-    const db = getFirestore(appFirebase);
-    const cajaRef = collection(db, "Caja");
-    const snapshot = await getDocs(cajaRef);
+  useEffect(() => {
+    obtenerCajas(1);
+  }, []);
 
-    const cajaData = [];
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      cajaData.push({
-        id: doc.id,
-        nombre: data.nombre || "",
-        sedeDireccion: data.sedeDireccion || "",
-        sedeTelefono: data.sedeTelefono || "",
-        sedeNombre: data.sedeNombre || "",
+  const abrirModalEditar = (caja) => {
+    setCaja(caja);
+    openModalEditar();
+  };
+
+  const abrirModalEliminar = (nombre) => {
+    setCaja({ nombre }); // Debes pasar un objeto con la propiedad 'nombre'
+    openModalEliminar();
+  };
+
+  const eliminarCaja = async () => {
+    try {
+      await deleteDoc(doc(db, "Cajas", caja.nombre));
+      closeModalEliminar();
+      console.log("Caja eliminada correctamente");
+      onCreateCaja();
+      window.alert("Se eliminó la caja con éxito");
+    } catch (error) {
+      console.error("Error al eliminar la caja: ", error);
+    }
+  };
+
+  const validateField = (fieldName, value) => {
+    const errors = {};
+    let fieldErrors = { ...errors };
+
+    switch (fieldName) {
+      case "sedeTelefono":
+        fieldErrors.sedeTelefono =
+          value.length !== 8 || isNaN(Number(value))
+            ? "El teléfono debe tener 8 números y ser solo números"
+            : "";
+        break;
+      default:
+        break;
+    }
+
+    return fieldErrors;
+  };
+
+  const editarCaja = async (form) => {
+    const nombre = caja.nombre;
+    try {
+      const cajaRef = doc(db, "Cajas", nombre);
+      await updateDoc(cajaRef, {
+        sedeNombre: form.sedeNombre,
+        sedeDireccion: form.sedeDireccion,
+        sedeTelefono: form.sedeTelefono,
       });
-    });
-
-    this.setState({ data: cajaData });
-  }
-
-  mostrarModalActualizar = (dato) => {
-    this.setState({
-      form: dato,
-      modalActualizar: true,
-    });
-  };
-
-  cerrarModalActualizar = () => {
-    this.setState({ modalActualizar: false });
-  };
-
-  mostrarModalInsertar = () => {
-    this.setState({
-      modalInsertar: true,
-    });
-  };
-
-  cerrarModalInsertar = () => {
-    this.setState({ modalInsertar: false });
-  };
-
-  editar = async (dato) => {
-    try {
-      const db = getFirestore(appFirebase);
-      const cajaRef = collection(db, "Caja");
-      const valorEditado = { ...this.state.form };
-
-      // Update the document in Firebase using its ID
-      await updateDoc(doc(cajaRef, dato.id), valorEditado);
-
-      // Update the local data in the state
-      const newData = this.state.data.map((item) =>
-        item.id === dato.id ? valorEditado : item
-      );
-      this.setState({ data: newData, modalActualizar: false });
+      console.log("Caja actualizada correctamente");
+      onCreateCaja();
+      window.alert("Se actualizó la caja con éxito");
     } catch (error) {
-      console.error("Error al editar la caja:", error);
+      console.error("Error al actualizar caja: ", error);
     }
   };
 
-  eliminar = (dato) => {
-    const opcion = window.confirm(
-      `¿Estás seguro de eliminar el elemento ${dato.id}?`
-    );
+  const [searchOption, setSearchOption] = useState("nombre");
+  const filteredCajas = dataState.filter((caja) => {
+    const searchTerm = searchQuery.toLowerCase();
+    if (searchOption === "nombre") {
+      return caja.nombre.toLowerCase().includes(searchTerm);
+    } else if (searchOption === "sedeNombre") {
+      return caja.sedeNombre.toLowerCase().includes(searchTerm);
+    } else if (searchOption === "sedeDireccion") {
+      return caja.sedeDireccion.toLowerCase().includes(searchTerm);
+    } else if (searchOption === "sedeTelefono") {
+      return caja.sedeTelefono.toLowerCase().includes(searchTerm);
+    }
+    return false;
+  });
 
-    if (opcion === true) {
-      this.eliminarElemento(dato);
+  const handleSearchOptionChange = (event) => {
+    setSearchOption(event.target.value);
+  };
+
+  const handleSearchChange = (event) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const handleNextPage = () => {
+    obtenerCajas(currentPage + 1);
+    setCurrentPage((prevPage) => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      obtenerCajas(currentPage - 1);
+      setCurrentPage((prevPage) => prevPage - 1);
     }
   };
 
-  eliminarElemento = async (dato) => {
+  const obtenerCajas = async (page) => {
     try {
-      const db = getFirestore(appFirebase);
-      const cajaRef = collection(db, "Caja");
+      setCurrentPage(page);
 
-      // Eliminar el documento de Firebase utilizando su ID
-      await deleteDoc(doc(cajaRef, dato.id));
+      const cajaRef = collection(db, "Cajas");
+      const cajaSnapshot = await getDocs(cajaRef);
+      const allCajas = cajaSnapshot.docs.map((caja) => caja.data());
 
-      // Actualizar la lista de datos después de la eliminación
-      const newData = this.state.data.filter((item) => item.id !== dato.id);
-      this.setState({ data: newData });
+      const cajasPerPage = 10;
+      const startIndex = (page - 1) * cajasPerPage;
+      const slicedCajas = allCajas.slice(startIndex, startIndex + cajasPerPage);
 
-      // Cerrar el modal de actualización si está abierto
-      this.setState({ modalActualizar: false });
+      setData(slicedCajas);
     } catch (error) {
-      console.error("Error al eliminar la caja:", error);
+      console.error("Error al obtener cajas: ", error);
     }
   };
 
-  insertar = async () => {
-    try {
-      const db = getFirestore(appFirebase);
-      const cajaRef = collection(db, "Caja");
-      const valorNuevo = { ...this.state.form };
+  const onCreateCaja = () => {
+    obtenerCajas(1);
+  };
 
-      // Consultar la colección para verificar si ya existe una caja con los mismos valores
-      const querySnapshot = await getDocs(cajaRef);
-      const existeCaja = querySnapshot.docs.some((doc) => {
-        const data = doc.data();
-        return (
-          data.nombre === valorNuevo.nombre &&
-          data.sedeDireccion === valorNuevo.sedeDireccion &&
-          data.sedeTelefono === valorNuevo.sedeTelefono &&
-          data.sedeNombre === valorNuevo.sedeNombre
-        );
+  const fieldOrderCrear = {
+    1: "nombre",
+    2: "sedeNombre",
+    3: "sedeDireccion",
+    4: "sedeTelefono",
+  };
+
+  const validateFieldCrear = (fieldName, value) => {
+    const errors = {};
+    let fieldErrors = { ...errors };
+
+    switch (fieldName) {
+      case "sedeTelefono":
+        fieldErrors.sedeTelefono =
+          value.length !== 8 || isNaN(Number(value))
+            ? "El teléfono debe tener 8 números y ser solo números"
+            : "";
+        break;
+      default:
+        break;
+    }
+
+    return fieldErrors;
+  };
+
+  const crearCaja = async (form) => {
+    try {
+      const nombre = form.nombre;
+      const cajaRef = doc(db, "Cajas", nombre);
+      await setDoc(cajaRef, {
+        nombre: form.nombre,
+        sedeNombre: form.sedeNombre,
+        sedeDireccion: form.sedeDireccion,
+        sedeTelefono: form.sedeTelefono,
       });
-
-      if (existeCaja) {
-        alert("Ya existe una caja con los mismos datos.");
-        return;
-      }
-
-      // Agregar un nuevo documento con ID generado automáticamente
-      await addDoc(cajaRef, valorNuevo);
-
-      // Actualizar la lista de datos después de la inserción
-      this.getCajaData();
-
-      // Cerrar el modal de inserción
-      this.setState({ modalInsertar: false });
+      onCreateCaja();
+      window.alert("Se creó la caja con éxito");
     } catch (error) {
-      console.error("Error al insertar la caja:", error);
+      console.error("Error al crear caja: ", error);
     }
   };
 
-  handleChange = (e) => {
-    this.setState({
-      form: {
-        ...this.state.form,
-        [e.target.name]: e.target.value,
-      },
-    });
+  const initialFormState = {
+    nombre: "",
+    sedeNombre: "",
+    sedeDireccion: "",
+    sedeTelefono: "",
   };
 
-  render() {
-    // Renderizar la tabla con los datos de Firebase
-    return (
-      <>
-        <Container
-          fluid
-          className="Table custom-table mt-5"
-        >
-          <Button
-            color="success"
-            className="create-button position-absolute start-0"
-            onClick={() => this.mostrarModalInsertar()}
-          >
-            Crear
-          </Button>
-          <Table className="Table mt-5">
-            <thead >
-              <tr id="blanco">
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Dirección</th>
-                <th>Teléfono</th>
-                <th>Sede</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {this.state.data.map((dato) => (
-                <tr key={dato.id}>
-                  <td>{dato.id}</td>
-                  <td>{dato.nombre}</td>
-                  <td>{dato.sedeDireccion}</td>
-                  <td>{dato.sedeTelefono}</td>
-                  <td>{dato.sedeNombre}</td>
-                  <td>
-                    <Button
-                      color="primary"
-                      onClick={() => this.mostrarModalActualizar(dato)}
-                    >
-                      Editar
-                    </Button>{" "}
-                    <Button color="danger" onClick={() => this.eliminar(dato)}>
-                      Eliminar
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Container>
-
-        {/* Modal de Actualización */}
-        <Modal isOpen={this.state.modalActualizar}>
-          <ModalHeader>
-            <div>
-              <h3>Editar Registro</h3>
-            </div>
-          </ModalHeader>
-
-          <ModalBody>
-            <FormGroup>
-              <label>Id:</label>
-
-              <input
-                className="form-control"
-                readOnly
-                type="text"
-                value={this.state.form.id}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Nombre:</label>
-              <input
-                className="form-control"
-                name="nombre"
-                type="text"
-                onChange={this.handleChange}
-                value={this.state.form.nombre}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Dirección:</label>
-              <input
-                className="form-control"
-                name="sedeDireccion"
-                type="text"
-                onChange={this.handleChange}
-                value={this.state.form.sedeDireccion}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Teléfono:</label>
-              <input
-                className="form-control"
-                name="sedeTelefono"
-                type="text"
-                onChange={this.handleChange}
-                value={this.state.form.sedeTelefono}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Sede:</label>
-              <input
-                className="form-control"
-                name="sedeNombre"
-                type="text"
-                onChange={this.handleChange}
-                value={this.state.form.sedeNombre}
-              />
-            </FormGroup>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button
-              color="primary"
-              onClick={() => this.editar(this.state.form)}
-            >
-              Editar
-            </Button>
-            <Button color="danger" onClick={() => this.cerrarModalActualizar()}>
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Modal>
-
-        {/* Modal de Inserción */}
-        <Modal isOpen={this.state.modalInsertar}>
-          <ModalHeader>
-            <div>
-              <h3>Insertar Personaje</h3>
-            </div>
-          </ModalHeader>
-
-          <ModalBody>
-            <FormGroup>
-              <label>Id:</label>
-
-              <input
-                className="form-control"
-                readOnly
-                type="text"
-                value={this.state.data.length + 1}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Nombre:</label>
-              <input
-                className="form-control"
-                name="nombre"
-                type="text"
-                onChange={this.handleChange}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Dirección:</label>
-              <input
-                className="form-control"
-                name="sedeDireccion"
-                type="text"
-                onChange={this.handleChange}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Teléfono:</label>
-              <input
-                className="form-control"
-                name="sedeTelefono"
-                type="text"
-                onChange={this.handleChange}
-              />
-            </FormGroup>
-
-            <FormGroup>
-              <label>Sede:</label>
-              <input
-                className="form-control"
-                name="sedeNombre"
-                type="text"
-                onChange={this.handleChange}
-              />
-            </FormGroup>
-          </ModalBody>
-
-          <ModalFooter>
-            <Button color="primary" onClick={() => this.insertar()}>
-              Insertar
-            </Button>
-            <Button
-              className="btn btn-danger"
-              onClick={() => this.cerrarModalInsertar()}
-            >
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Modal>
-      </>
-    );
-  }
+  return (
+    <Container>
+      <h1>Cajas</h1>
+      <br />
+      <Button onClick={openModalCrear} color="success">
+        Crear
+      </Button>
+      <br />
+      <br />
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={handleSearchChange}
+        placeholder={`Buscar por ${searchOption}`}
+      />
+      <select
+        className="select-styled"
+        value={searchOption}
+        onChange={handleSearchOptionChange}
+      >
+        <option value="nombre">Nombre</option>
+        <option value="sedeNombre">Sede Nombre</option>
+        <option value="sedeDireccion">Sede Dirección</option>
+        <option value="sedeTelefono">Sede Teléfono</option>
+      </select>
+      <Table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Sede Nombre</th>
+            <th>Sede Dirección</th>
+            <th>Sede Teléfono</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredCajas.map((caja) => (
+            <tr key={caja.nombre}>
+              <td>{caja.nombre}</td>
+              <td>{caja.sedeNombre}</td>
+              <td>{caja.sedeDireccion}</td>
+              <td>{caja.sedeTelefono}</td>
+              <td>
+                <Button onClick={() => abrirModalEditar(caja)} color="primary">
+                  <FontAwesomeIcon icon={faPenToSquare} size="lg" />
+                </Button>
+                <Button
+                  onClick={() => abrirModalEliminar(caja.nombre)}
+                  color="danger"
+                >
+                  <FontAwesomeIcon icon={faSquareXmark} size="lg" />
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+      <div className="pagination">
+      <Button
+        onClick={handlePrevPage}
+        disabled={currentPage === 1}
+        color="primary"
+      >
+        <FontAwesomeIcon icon={faArrowLeft} size="lg" />
+      </Button>
+      <span> Pagina: {currentPage}</span>
+      <Button
+        onClick={handleNextPage}
+        disabled={dataState.length < 10}
+        color="primary"
+      >
+        <FontAwesomeIcon icon={faArrowRight} size="lg" />
+      </Button>
+    </div>
+      {/* Agregar modales */}
+      <ModalA
+        isOpenA={isOpenEditar}
+        closeModal={closeModalEditar}
+        elemento={caja}
+        validateField={validateField}
+        FuntionEdit={editarCaja}
+        fieldOrder={fieldOrderCrear}
+      />
+      <ModalCrear
+        isOpenA={isOpenCrear}
+        closeModal={closeModalCrear}
+        onCreateCaja={onCreateCaja}
+        validateField={validateFieldCrear}
+        FuntionCreate={crearCaja}
+        initialForm={initialFormState}
+        fieldOrder={fieldOrderCrear}
+      />
+      <ModalEliminar
+        isOpen={isOpenEliminar}
+        closeModal={closeModalEliminar}
+        nombre={caja.nombre} // Usar la variable nombre
+        funtionDelete={eliminarCaja}
+      />
+    </Container>
+  );
 }
 
-export default CrudCaja;
+export default Cajas;
