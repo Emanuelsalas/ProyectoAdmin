@@ -8,7 +8,7 @@ import ModalEliminar from "../../components/modalEliminar/modalElimicar";
 import CustomAlert from "../../components/alert/alert";
 //Firebase
 import { Table, Button, Container } from "reactstrap";
-import appFirebase from "../../firebase/firebase.config"; // Llama a donde tengo la configuracion de la aplicacion que usa la base
+import appHOT from "../../firebase/firebase.confidHOT";// Llama a donde tengo la configuracion de la aplicacion que usa la base
 import { getFirestore } from "firebase/firestore"; // Llamo lo que necesito usar para la los metodos de traer docs etc
 import { collection, getDocs,doc, updateDoc,setDoc, deleteDoc } from "firebase/firestore";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
@@ -26,7 +26,7 @@ function Administradores() {
     Admin: "Admin",
     SuperAdmin: "SuperAdmin"
   }
-  const db = getFirestore(appFirebase); // Inicializo la base de datos en la aplicacion web
+  const db = getFirestore(appHOT); // Inicializo la base de datos en la aplicacion web
   const auth = getAuth();
   //hooks
  

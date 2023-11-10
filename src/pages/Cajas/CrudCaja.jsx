@@ -8,7 +8,7 @@ import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faSquareXmark } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import appFirebase from "../../firebase/firebase.config";
+import appPVH from "../../firebase/firebase.config";
 import {
   getFirestore,
   collection,
@@ -26,7 +26,7 @@ import ModalCrear from "../../components/modalCrear/modalcrear";
 library.add(faPenToSquare, faSquareXmark, faArrowRight, faArrowLeft);
 
 function Cajas() {
-  const db = getFirestore(appFirebase);
+  const db = getFirestore(appPVH);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [caja, setCaja] = useState([]);

@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getStorage} from"firebase/storage";
+import { getFirestore } from "firebase/firestore";
 import { v4 } from "uuid";
 import { upload } from "@testing-library/user-event/dist/upload";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -31,4 +32,4 @@ export async function guardarFoto(archivo){
   const imagenURL = await snapshot.ref.getDownloadURL();
   return imagenURL;
 }
-export default dbPVH;
+export default appPVH;

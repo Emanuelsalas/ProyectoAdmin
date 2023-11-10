@@ -2,7 +2,6 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getStorage} from"firebase/storage";
-import { getFirestore } from "firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 /** 
@@ -21,5 +20,4 @@ const configHOT = {
 // Initialize Firebase
 const appHOT = initializeApp(configHOT,'homasoutlet-e9ecc');
 const analyticsPVH = getAnalytics(appHOT);
-const dbHOT = getFirestore(appHOT);
-export default dbHOT;
+export default appHOT;
