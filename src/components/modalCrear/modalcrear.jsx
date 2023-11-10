@@ -18,7 +18,8 @@ function ModalCrear({
   fieldOrder,
   Combobox,
   nombreCrud,
-  Etiquetas
+  Etiquetas,
+  combobox2
 }) {
   const [errors, setErrors] = useState({});
   const [form, setForm] = useState(initialForm);
@@ -42,7 +43,7 @@ function ModalCrear({
       [name]: value,
     });
     setIsFormEdited(true); // Indica que el formulario ha sido editado
-  
+
     // Realizar validaciones
     const fieldErrors = validateField(name, value);
     setErrors(fieldErrors);
@@ -57,13 +58,12 @@ function ModalCrear({
     FuntionCreate(form);
     closeModal();
   };
-
   const generateFormGroups = () => {
     return Object.entries(fieldOrder).map(([order, key]) => {
 
       const hasError = errors[key] && (isFormEdited || form[key]);
       const label = Etiquetas[key] || (key.charAt(0).toUpperCase() + key.slice(1));
- 
+
       if (key === "rol") {
         return (
           <FormGroup key={key} className={hasError ? "error" : ""}>
@@ -84,6 +84,61 @@ function ModalCrear({
             {hasError && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
+      } else if (key === "EstadoS"||key === "EstadoCa") {
+        // Si es el atributo "rol", generar un combobox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{label}:</label>
+            <select
+              className="form-control"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un estado</option>
+              <option value="Activo">Activo</option>
+              <option value="Cerrado">Cerrado</option>
+            </select>
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }else if (key === "correoElectronico" || key === "Correo") {
+        return (
+          <FormGroup key={key} className={hasError ? "error" : ""}>
+            <label>{label}:</label>
+            <input
+              required
+              className="form-control"
+              type="email"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            />
+            {hasError && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }
+      else if (key === "Encargado") {
+        // Si es el atributo "rol", generar un combobox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{label}:</label>
+            <select
+              className="form-control"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            >
+              <option value="">Selecciona un Encargado</option>
+              {combobox2.map((encargado) => (
+                <option key={encargado.id} value={encargado.nombre}>
+                  {encargado.nombre}
+                </option>
+              ))}
+            </select>
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
       } else {
         return (
           <FormGroup key={key} className={hasError ? "error" : ""}>
@@ -102,7 +157,7 @@ function ModalCrear({
       }
     });
   };
-  
+
 
   return (
     <Modal isOpen={isOpenA} toggle={cerrarModalCrear} backdrop="static">

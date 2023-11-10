@@ -18,7 +18,7 @@ function ModalA({
   fieldOrder,
   nombreCrud,
   Etiquetas,
-  additionalParam = "default value"
+  combobox2 
 }) {
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
@@ -80,6 +80,24 @@ function ModalA({
             {errors[key] && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
+      } else if (key ==="EstadoS"||key === "EstadoCa") {
+        // Si es el atributo "rol", generar un combobox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{label}:</label>
+            <select
+              className="form-control"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            >
+              <option value="">Seleccione un estado</option>
+              <option value="Activo">Activo</option>
+              <option value="Cerrado">Cerrado</option>
+            </select>
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
       } else if (key === "morosidad") {
         // Si es el atributo "morosidad", generar un checkbox
         return (
@@ -94,7 +112,44 @@ function ModalA({
             {errors[key] && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
-      } else {
+      } else if (key === "correoElectronico" || key === "Correo") {
+        return (
+          <FormGroup key={key} className={errors ? "error" : ""}>
+            <label>{label}:</label>
+            <input
+              required
+              className="form-control"
+              type="email"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            />
+            {errors && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }
+      else if (key === "Encargado") {
+        // Si es el atributo "rol", generar un combobox
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <label>{label}:</label>
+            <select
+              className="form-control"
+              name={key}
+              value={form[key] || ""}
+              onChange={handleChange}
+            >
+              <option value="">Selecciona un Encargado</option>
+              {combobox2.map((encargado) => (
+                <option key={encargado.id} value={encargado.nombre}>
+                  {encargado.nombre}
+                </option>
+              ))}
+            </select>
+            {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }else {
         // Generar un input para los otros atributos
         return (
           <FormGroup key={key} className={errors[key] ? "error" : ""}>

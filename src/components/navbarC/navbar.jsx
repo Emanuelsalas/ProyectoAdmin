@@ -49,16 +49,6 @@ function TopNavBar() {
           >
             Sedes
           </Nav.Link>
-
-          <Nav.Link
-            className={`navo ${
-              location.pathname === "/Clientes" ? "active" : ""
-            }`}
-            as={Link}
-            to="/Clientes"
-          >
-            Clientes
-          </Nav.Link>
           <Nav.Link
             className={`navo ${location.pathname === "/login" ? "active" : ""}`}
             as={Link}

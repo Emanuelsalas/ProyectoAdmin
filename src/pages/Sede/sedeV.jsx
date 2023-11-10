@@ -23,6 +23,7 @@ const nombre = "Sede"
 function Sedes() {
   const dbPVH = getFirestore(appPVH);
   const dbHOT = getFirestore(appHOT);
+  //Variables
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sede, setSede] = useState([]);
@@ -39,22 +40,21 @@ function Sedes() {
     obtenerSede(1);
   }, []);
   //----------------------------------------------Editar------------------------------------------------------------------------------------------------
-
+  const combobox = {
+    Activo: "Activo",
+    Cerrado: "Cerrado"
+  }
   const fieldOrderEditar = {
     1: "Nombre",
     2: "Direccion",
     3: "Encargado",
-    4: "Estado",
+    4: "EstadoS",
     5: "Foto",
     6: "Correo",
     7: "Telefono",
   };
-  const combobox = {
-    Admin: "Admin",
-    SuperAdmin: "SuperAdmin"
-  }
   const abrirModalActualizar = (cedula) => {
-    setTextoAlert("Cliente modificado con éxito");
+    setTextoAlert("Sede modificada con éxito");
     setTipoAlert("success");
     setSede(cedula);
     openModalActualizar();
@@ -78,7 +78,7 @@ function Sedes() {
         Correo: form.Correo,
         Encargado: form.Encargado,
         Foto: form.Foto,
-        Estado: form.Estado,
+        EstadoS: form.EstadoS,
         Telefono: form.Telefono,
         Direccion: form.Direccion,
       });
@@ -105,7 +105,9 @@ function Sedes() {
       return false;
   });
 
-
+  useEffect(() => {
+    obtenerEncargados();
+  }, [isOpenActualizar,isOpenCrear]);
   const handleSearchOptionChange = (event) => {
     setSearchOption(event.target.value);
   };
@@ -139,7 +141,7 @@ function Sedes() {
       const userSnapshot = await getDocs(userRef);
       const allProducts = userSnapshot.docs
         .map((product) => product.data())
-        .filter((product) => product.Estado !== "Eliminado");
+        .filter((product) => product.EstadoS !== "Eliminado");
       const slicedProducts = allProducts.slice(startIndex, startIndex + usersPerPage);
 
       setData(slicedProducts); // Actualizar el estado de datos con los productos obtenidos
@@ -150,10 +152,12 @@ function Sedes() {
 
   const obtenerEncargados = async (page) => {
     try {
-      const userRef = collection(dbPVH, "Sede");
+      const userRef = collection(dbHOT, "Usuarios");
       const userSnapshot = await getDocs(userRef);
-      const allDepartmentos = userSnapshot.docs
-        .map((departament) => departament.data())
+      const allUsers = userSnapshot.docs
+        .map((user) => user.data())
+        .filter((user) => user.rol === "Admin" || user.rol === "SuperAdmin");
+      setEncargado(allUsers);
     } catch (error) {
       console.error("Error al obtener departamentos: ", error);
     }
@@ -167,7 +171,7 @@ function Sedes() {
     1: "Nombre",
     2: "Direccion",
     3: "Encargado",
-    4: "Estado",
+    4: "EstadoS",
     5: "Foto",
     6: "Correo",
     7: "Telefono",
@@ -181,7 +185,7 @@ function Sedes() {
         fieldErrors.contrasena =
           value.length < 6 ? "La contraseña debe tener al menos 6 caracteres" : "";
         break;
-      case "telefono":
+      case "Telefono":
         fieldErrors.telefono =
           value.length !== 8 || isNaN(Number(value))
             ? "El teléfono debe tener 8 números y ser solo números"
@@ -201,7 +205,7 @@ function Sedes() {
         Correo: form.Correo,
         Encargado: form.Encargado,
         Foto: form.Foto,
-        Estado: form.Estado,
+        EstadoS: form.EstadoS,
         Telefono: form.Telefono,
         Direccion: form.Direccion,
       });
@@ -218,7 +222,7 @@ function Sedes() {
     Correo:"",
     Encargado:"",
     Foto:"",
-    Estado:"",
+    EstadoS:"",
     Telefono:"",
     Direccion:"",
   };
@@ -242,7 +246,7 @@ function Sedes() {
       console.log(sede)
 
       await updateDoc(department, {
-        Estado: "Eliminado"
+        EstadoS: "Eliminado"
       });
       console.log("Estado del producto cambiado correctamente");
       onCreateProducto();
@@ -296,7 +300,7 @@ function Sedes() {
               <td>{dato.Nombre}</td>
               <td>{dato.Encargado}</td>
               <td>{dato.Telefono}</td>
-              <td>{dato.Estado}</td>
+              <td>{dato.EstadoS}</td>
               <td>{dato.Correo}</td>
               <td>
                 <img src={dato.Foto} alt={dato.Nombre} style={{ width: '30px', height: '30px' }} />
@@ -347,6 +351,7 @@ function Sedes() {
         fieldOrder={fieldOrderEditar}
         nombreCrud={nombre}
         Etiquetas={""}
+        combobox2={encargados}
       />
       <ModalCrear
         isOpenA={isOpenCrear}
@@ -359,11 +364,12 @@ function Sedes() {
         Combobox={combobox}
         nombreCrud={nombre}
         Etiquetas={""}
+        combobox2={encargados}
       />
       <ModalEliminar
         isOpen={isOpenEliminar}
         closeModal={closeModalEliminar}
-        nombre={sede.nombre}
+        nombre={sede.Nombre}
         funtionDelete={eliminarSede}
         nombreCrud={nombre}
       />
