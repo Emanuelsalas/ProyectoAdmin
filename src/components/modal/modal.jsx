@@ -8,7 +8,7 @@ import {
 } from "reactstrap";
 import React, { useEffect, useState } from "react";
 import "./modal.css";
-
+import { uploadImageToStorage } from "../../firebase/firebase.config";
 function ModalA({
   isOpenA,
   closeModal,
@@ -18,7 +18,8 @@ function ModalA({
   fieldOrder,
   nombreCrud,
   Etiquetas,
-  combobox2 
+  combobox2,
+  setImageFile 
 }) {
   const [form, setForm] = useState({});
   const [errors, setErrors] = useState({});
@@ -35,16 +36,19 @@ function ModalA({
     setForm({});
   };
 
-  const handleChange = (e) => {
-    const { name, type, checked, value } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
-    setForm({
-      ...form,
-      [name]: newValue,
-    });
-  
-    // Realizar validaciones en tiempo real
-    setErrors(validateField(name, newValue));
+  const handleChange = async(e) => {
+    const { name } = e.target;
+    if (name === "Image" || name === "Foto" || name === "Imagen") {
+      const imageUrl = await uploadImageToStorage(e.target.files[0], "Imagenes"+nombreCrud);
+      setImageFile(imageUrl);
+    } else {
+      const { value } = e.target;
+      setForm({
+        ...form,
+        [name]: value,
+      });
+      setErrors(validateField(name, value));
+    }
   };
 
   const cerrarModalActualizar = () => {
@@ -98,7 +102,19 @@ function ModalA({
             {errors[key] && <div className="error">{errors[key]}</div>}
           </FormGroup>
         );
-      } else if (key === "morosidad") {
+      } else if (key === "Image" || key === "Foto" || key === "Imagen") {
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <input
+              type="file"
+              name={key}
+              accept="image/*"
+              value={""}
+              onChange={handleChange}
+            />
+          </FormGroup>
+        );
+      }else if (key === "morosidad") {
         // Si es el atributo "morosidad", generar un checkbox
         return (
           <FormGroup key={key} className={errors[key] ? "error" : ""}>

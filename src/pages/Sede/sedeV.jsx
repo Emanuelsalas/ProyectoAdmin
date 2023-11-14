@@ -72,7 +72,7 @@ function Sedes() {
     try {
       const department = doc(dbPVH, "Sede", encontrado);
       console.log(sede)
-
+      if(imageFile===null){
       await updateDoc(department, {
         Nombre: form.Nombre,
         Correo: form.Correo,
@@ -80,13 +80,22 @@ function Sedes() {
         EstadoS: form.EstadoS,
         Telefono: form.Telefono,
         Direccion: form.Direccion,
-      });
+      });}else {await updateDoc(department, {
+        Nombre: form.Nombre,
+        Correo: form.Correo,
+        Encargado: form.Encargado,
+        EstadoS: form.EstadoS,
+        Foto: imageFile,
+        Telefono: form.Telefono,
+        Direccion: form.Direccion,
+      });}
       console.log("Document successfully updated!");
       onCreateProducto();
       setShowAlert(true);
       setTimeout(() => {
         setShowAlert(false);
       }, 1500);
+      setImageFile(null);
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -218,6 +227,7 @@ function Sedes() {
       setTimeout(() => {
         setShowAlert(false);
       }, 1500);
+      setImageFile(null);
     } catch (error) {
       console.error("Error al crear producto y documentar en Firestore: ", error);
     }
@@ -363,6 +373,7 @@ function Sedes() {
         nombreCrud={nombre}
         Etiquetas={""}
         combobox2={encargados}
+        setImageFile={setImageFile}
       />
       <ModalCrear
         isOpenA={isOpenCrear}
