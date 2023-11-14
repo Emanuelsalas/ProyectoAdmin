@@ -8,7 +8,7 @@ import {
   ModalFooter,
   Button,
 } from "reactstrap";
-
+import { uploadImageToStorage } from "../../firebase/firebase.config";
 function ModalCrear({
   isOpenA,
   closeModal,

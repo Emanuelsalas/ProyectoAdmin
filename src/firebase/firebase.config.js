@@ -1,10 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-import { getStorage} from"firebase/storage";
+import { ref, uploadBytes, getDownloadURL,getStorage } from "firebase/storage";
 import { getFirestore } from "firebase/firestore";
-import { v4 } from "uuid";
-import { upload } from "@testing-library/user-event/dist/upload";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -23,13 +20,12 @@ const configPVH = {
 };
 // Initialize Firebase
 const appPVH = initializeApp(configPVH);
-const analyticsPVH = getAnalytics(appPVH);
-const dbPVH = getFirestore(appPVH);
-
-export async function guardarFoto(archivo){
-  const dato = Storage(`/ImagenesSede/${v4()}`);
-  const snapshot = await dato.put(archivo);
-  const imagenURL = await snapshot.ref.getDownloadURL();
-  return imagenURL;
-}
+const storage = getStorage(appPVH);
+const uploadImageToStorage = async (file, folderName) => {
+  const storageRef = ref(storage, `${folderName}/${file.name}`);
+  await uploadBytes(storageRef, file);
+  const downloadURL = await getDownloadURL(storageRef);
+  return downloadURL;
+};
+export { uploadImageToStorage };
 export default appPVH;
