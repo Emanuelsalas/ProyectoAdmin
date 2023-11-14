@@ -19,7 +19,8 @@ function ModalCrear({
   Combobox,
   nombreCrud,
   Etiquetas,
-  combobox2
+  combobox2,  
+  setImageFile
 }) {
   const [errors, setErrors] = useState({});
   const [form, setForm] = useState(initialForm);
@@ -36,17 +37,19 @@ function ModalCrear({
     setIsFormEdited(false);
     setErrors({});
   };
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({
-      ...form,
-      [name]: value,
-    });
-    setIsFormEdited(true); // Indica que el formulario ha sido editado
-
-    // Realizar validaciones
-    const fieldErrors = validateField(name, value);
-    setErrors(fieldErrors);
+  const handleChange = async(e) => {
+    const { name } = e.target;
+    if (name === "Image" || name === "Foto" || name === "Imagen") {
+      const imageUrl = await uploadImageToStorage(e.target.files[0], "Imagenes"+nombreCrud);
+      setImageFile(imageUrl);
+    } else {
+      const { value } = e.target;
+      setForm({
+        ...form,
+        [name]: value,
+      });
+      setErrors(validateField(name, value));
+    }
   };
 
 
@@ -100,6 +103,18 @@ function ModalCrear({
               <option value="Cerrado">Cerrado</option>
             </select>
             {errors[key] && <div className="error">{errors[key]}</div>}
+          </FormGroup>
+        );
+      }else if (key === "Image" || key === "Foto" || key === "Imagen") {
+        return (
+          <FormGroup key={key} className={errors[key] ? "error" : ""}>
+            <input
+              type="file"
+              name={key}
+              accept="image/*"
+              value={form[key] || ""}
+              onChange={handleChange}
+            />
           </FormGroup>
         );
       }else if (key === "correoElectronico" || key === "Correo") {

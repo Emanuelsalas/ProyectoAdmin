@@ -27,6 +27,7 @@ function Sedes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sede, setSede] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [textoAlert, setTextoAlert] = useState("");
   const [tipoAlert, setTipoAlert] = useState("");
@@ -49,7 +50,6 @@ function Sedes() {
     2: "Direccion",
     3: "Encargado",
     4: "EstadoS",
-    5: "Foto",
     6: "Correo",
     7: "Telefono",
   };
@@ -77,7 +77,6 @@ function Sedes() {
         Nombre: form.Nombre,
         Correo: form.Correo,
         Encargado: form.Encargado,
-        Foto: form.Foto,
         EstadoS: form.EstadoS,
         Telefono: form.Telefono,
         Direccion: form.Direccion,
@@ -204,7 +203,7 @@ function Sedes() {
         Nombre: form.Nombre,
         Correo: form.Correo,
         Encargado: form.Encargado,
-        Foto: form.Foto,
+        Foto: imageFile,
         EstadoS: form.EstadoS,
         Telefono: form.Telefono,
         Direccion: form.Direccion,
@@ -365,6 +364,7 @@ function Sedes() {
         nombreCrud={nombre}
         Etiquetas={""}
         combobox2={encargados}
+        setImageFile={setImageFile}
       />
       <ModalEliminar
         isOpen={isOpenEliminar}
