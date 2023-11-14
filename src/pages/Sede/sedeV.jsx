@@ -83,7 +83,10 @@ function Sedes() {
       });
       console.log("Document successfully updated!");
       onCreateProducto();
-
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 1500);
     } catch (error) {
       console.error("Error updating document: ", error);
     }
@@ -211,6 +214,10 @@ function Sedes() {
 
       console.log("Sede creada y documentado en Firestore");
       onCreateProducto();
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 1500);
     } catch (error) {
       console.error("Error al crear producto y documentar en Firestore: ", error);
     }
@@ -249,9 +256,14 @@ function Sedes() {
       });
       console.log("Estado del producto cambiado correctamente");
       onCreateProducto();
+      setShowAlert(true);
+      setTimeout(() => {
+        setShowAlert(false);
+      }, 1500);
     } catch (error) {
       console.error("Error al cambiar el estado del producto: ", error);
     }
+    
   };
   const agregarProductoAFactura = (producto) => {
     // Devuelve el producto sin realizar acciones adicionales
