@@ -27,7 +27,7 @@ function Administradores() {
     SuperAdmin: "SuperAdmin"
   }
   const db = getFirestore(appHOT); // Inicializo la base de datos en la aplicacion web
-  const auth = getAuth();
+  const auth = getAuth(appHOT);
   //hooks
  
   const [searchQuery, setSearchQuery] = useState('');
