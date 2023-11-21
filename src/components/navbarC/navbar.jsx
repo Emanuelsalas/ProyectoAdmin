@@ -25,7 +25,7 @@ function TopNavBar() {
         <Navbar.Brand id="home" href="/">
           HOMAS outlet
         </Navbar.Brand>
-        <Nav className="me-auto" variant="tabs" defaultActiveKey="/home">
+        <Nav className="me-auto" variant="tabs" defaultActiveKey="/Administradores">
           <Nav.Link
             className={`navo ${
               location.pathname === "/Administradores" ? "active" : ""

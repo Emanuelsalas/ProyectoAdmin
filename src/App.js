@@ -10,14 +10,13 @@ import Administrador from './pages/Administradores/administradores';
 import CrudCaja from './pages/Cajas/CrudCaja';
 import Sedes from './pages/Sede/sedeV';
 import { ProtectedRoutes } from './components/ProtectRoutes';
-
-const numbers = [3454, 3455, 34545];
+import Login from './pages/login/Login';
 function App() {
   return (
     <Router className='App'>
       <TopNavBar />
     <Routes>
-    <Route path='/  Login' element={<h1>Login</h1>} />
+    <Route path='/' element={<Login />} />
       {/*   <Route element={<ProtectedRoutes isAllowed={!!user && user.rol =="Admin"}/>} redirecTo="/" > */ }
       <Route path='/Administradores' element={<Administrador />} /> 
       <Route path='/Cajas' element={<CrudCaja/>} />

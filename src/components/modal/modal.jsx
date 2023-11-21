@@ -42,13 +42,15 @@ function ModalA({
       const imageUrl = await uploadImageToStorage(e.target.files[0], "Imagenes"+nombreCrud);
       setImageFile(imageUrl);
     } else {
-      const { value } = e.target;
+      const { name, type, checked, value } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
       setForm({
         ...form,
-        [name]: value,
+        [name]: newValue,
       });
-      setErrors(validateField(name, value));
+      setErrors(validateField(name, newValue));
     }
+    
   };
 
   const cerrarModalActualizar = () => {
